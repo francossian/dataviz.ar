@@ -11,6 +11,59 @@
     <p>This is <mark>highlighted</mark> text.</p>
     <p>This is <del>deleted</del> and <ins>inserted</ins> text.</p>
     <p>This is <code>inline code</code>.</p>
+
+    <svg id="bar-chart"></svg>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+      const data = [
+        { name: "A", value: 1 },
+        { name: "B", value: 5 },
+        { name: "C", value: 8 },
+        { name: "D", value: 10 },
+      ];
+
+      const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+      const width = 400 - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      const svg = d3
+        .select("#bar-chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const x = d3
+        .scaleBand()
+        .domain(data.map((d) => d.name))
+        .range([0, width])
+        .padding(0.2);
+
+      const y = d3
+        .scaleLinear()
+        .domain([0, d3.max(data, (d) => d.value)])
+        .nice()
+        .range([height, 0]);
+
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+      svg.append("g").call(d3.axisLeft(y));
+
+      svg
+        .selectAll(".bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - y(d.value))
+        .attr("fill", "#74ACDF");
+    </script>
   </body>
   <footer>
     <p>&copy; 2026 My First Website. All rights reserved.</p>
