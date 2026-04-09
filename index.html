@@ -1,71 +1,381 @@
 <!doctype html>
-<html>
+<html lang="es">
   <head>
-    <title>My First Website</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Franco Guiragossian — dataviz.ar</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <p>This is my very first website.</p>
-    <p>This is <strong>important</strong> text.</p>
-    <p>This is <em>emphasized</em> text.</p>
-    <p>This is <mark>highlighted</mark> text.</p>
-    <p>This is <del>deleted</del> and <ins>inserted</ins> text.</p>
-    <p>This is <code>inline code</code>.</p>
+    <!-- ═══════════════════════════════════════════
+         HERO SECTION
+    ════════════════════════════════════════════ -->
+    <section class="hero">
+      <!-- Particle network lives on this canvas, drawn by D3 -->
+      <canvas id="particle-canvas"></canvas>
 
-    <svg id="bar-chart"></svg>
+      <div class="hero-card">
+      <div class="hero-content">
+        <!-- Round profile photo -->
+        <img
+          src="public/images/franco.webp"
+          alt="Franco Guiragossian"
+          class="hero-photo"
+        />
+
+        <!-- Name typed out character by character on load (set via JS) -->
+        <h1 class="hero-name" id="hero-name"></h1>
+
+        <!-- Animated role line (set via JS from translations.roles) -->
+        <p class="hero-role">
+          <span id="hero-role"></span><span class="cursor">|</span>
+        </p>
+
+        <!-- Static tagline below the role (set via JS from translations.tagline) -->
+        <p class="hero-tagline" id="hero-tagline"></p>
+
+        <!-- CTA buttons (labels set via JS from translations.cta_*) -->
+        <div class="hero-ctas">
+          <a href="/portfolio" class="btn btn-primary" id="cta-portfolio"></a>
+          <a
+            href="/franco-guiragossian"
+            class="btn btn-secondary"
+            id="cta-about"
+          ></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PLACEHOLDER — rest of page sections go here
+         (Featured Work, What I Do, Blog Preview, etc.)
+    ════════════════════════════════════════════ -->
+
+    <footer class="site-footer">
+      <p id="footer-copy"></p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script>
-      const data = [
-        { name: "A", value: 1 },
-        { name: "B", value: 5 },
-        { name: "C", value: 8 },
-        { name: "D", value: 10 },
-      ];
+      // ═══════════════════════════════════════════════════════
+      // TRANSLATIONS
+      // All user-facing strings live here — never hardcode text
+      // in the HTML above. To add a new language, add a new key
+      // at the same level as "es" and "en".
+      // ═══════════════════════════════════════════════════════
+      const translations = {
+        es: {
+          // ── Your name as it will be typed out on screen ──
+          // NOTE: Change this if you ever use a different display name.
+          name: "Franco Guiragossian",
 
-      const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-      const width = 400 - margin.left - margin.right;
-      const height = 300 - margin.top - margin.bottom;
+          // ── Roles cycled in the animated morph below your name ──
+          // ADD / REMOVE / REORDER roles here freely.
+          // Keep them short (≤ 30 chars) so they fit on one line on mobile.
+          roles: [
+            "Analista de datos",
+            "Diseñador de encuestas",
+            "Investigador de mercado",
+            // ✏️  Add more Spanish roles here, e.g.:
+            // "Consultor de datos",
+            // "Especialista en visualización",
+          ],
 
-      const svg = d3
-        .select("#bar-chart")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+          // ── Short tagline shown below the role morph ──
+          // One line of keywords. Use · as separator.
+          // ✏️  Update this to reflect your core services / skills.
+          tagline:
+            "Análisis de datos · Desarollo de dashboards · Diseño de encuestas",
 
-      const x = d3
-        .scaleBand()
-        .domain(data.map((d) => d.name))
-        .range([0, width])
-        .padding(0.2);
+          // ── Hero CTA button labels ──
+          cta_portfolio: "Ver portfolio",
+          cta_about: "Sobre mí",
 
-      const y = d3
-        .scaleLinear()
-        .domain([0, d3.max(data, (d) => d.value)])
-        .nice()
-        .range([height, 0]);
+          // ── Footer copyright line ──
+          footer: "© 2026 Franco Guiragossian · dataviz.ar",
+        },
 
-      svg
-        .append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x));
+        en: {
+          // ── Your name (same in both languages, but kept here for consistency) ──
+          name: "Franco Guiragossian",
 
-      svg.append("g").call(d3.axisLeft(y));
+          // ── Roles — English equivalents ──
+          // Keep in sync with the es.roles list (same count recommended).
+          roles: [
+            "Data Analyst",
+            "Survey Designer",
+            "Market Research Specialist",
+            // ✏️  Add more English roles here, e.g.:
+            // "Data Consultant",
+            // "Visualization Designer",
+          ],
 
-      svg
-        .selectAll(".bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", (d) => x(d.name))
-        .attr("y", (d) => y(d.value))
-        .attr("width", x.bandwidth())
-        .attr("height", (d) => height - y(d.value))
-        .attr("fill", "#74ACDF");
+          // ── Short tagline — English version ──
+          // ✏️  Update to match your es.tagline in meaning.
+          tagline: "Data analysis · Survey design · Market research",
+
+          // ── Hero CTA button labels ──
+          cta_portfolio: "View portfolio",
+          cta_about: "About me",
+
+          // ── Footer copyright line ──
+          footer: "© 2026 Franco Guiragossian · dataviz.ar",
+        },
+      };
+
+      // ═══════════════════════════════════════════════════════
+      // LANGUAGE DETECTION  (IP geolocation via ipapi.co)
+      //
+      // detectLang() fetches the visitor's country code and
+      // returns "es" for Argentina, "en" for everything else.
+      //
+      // To add more Spanish-speaking countries, extend the array:
+      //   ["AR", "ES", "MX", "CL", "CO", ...].includes(country_code)
+      //
+      // If the fetch fails (network error, API down, ad-blocker),
+      // it silently falls back to Spanish.
+      // ═══════════════════════════════════════════════════════
+      async function detectLang() {
+        try {
+          const res = await fetch("https://ipapi.co/json/");
+          const { country_code } = await res.json();
+          // Spanish-speaking countries — add/remove as needed
+          const spanishCountries = [
+            "AR",
+            "BO",
+            "CL",
+            "CO",
+            "CR",
+            "CU",
+            "DO",
+            "EC",
+            "ES",
+            "GQ",
+            "GT",
+            "HN",
+            "MX",
+            "NI",
+            "PA",
+            "PE",
+            "PR",
+            "PY",
+            "SV",
+            "UY",
+            "VE",
+          ];
+          return spanishCountries.includes(country_code) ? "es" : "en";
+        } catch {
+          return "es"; // fallback to Spanish on any error
+        }
+      }
+
+      // Convenience helper — use t('key') anywhere instead of translations[lang]['key']
+      // Note: lang is set inside initPage() once geolocation resolves
+      let lang;
+      function t(key) {
+        return translations[lang][key];
+      }
+
+      // Apply all translated strings to the DOM, then kick off animations
+      function initPage() {
+        document.documentElement.setAttribute("lang", lang);
+        document.getElementById("hero-tagline").textContent = t("tagline");
+        document.getElementById("cta-portfolio").textContent =
+          t("cta_portfolio");
+        document.getElementById("cta-about").textContent = t("cta_about");
+        document.getElementById("footer-copy").textContent = t("footer");
+
+        // Start typewriter now that lang is known
+        typewriterName();
+      }
+
+      // Resolve language first, then render — keeps animations in sync with language
+      detectLang().then((detectedLang) => {
+        lang = detectedLang;
+        initPage();
+      });
+
+      // ─────────────────────────────────────────
+      // 1. PARTICLE NETWORK BACKGROUND
+      //    Draws nodes + edges on a <canvas>.
+      //    Each node drifts slowly; edges appear
+      //    when two nodes are close enough.
+      //    Mouse proximity pulls nearby nodes.
+      // ─────────────────────────────────────────
+      (function initParticles() {
+        const canvas = document.getElementById("particle-canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Resize canvas to fill the hero section
+        function resize() {
+          canvas.width = canvas.offsetWidth;
+          canvas.height = canvas.offsetHeight;
+        }
+        resize();
+        window.addEventListener("resize", resize);
+
+        const COUNT = 60; // number of nodes
+        const LINK_DIST = 130; // max distance to draw an edge
+        const SPEED = 0.4; // base drift speed
+        const NODE_COLOR = "rgba(0, 173, 181, 0.6)"; // teal
+
+        // Track mouse position to attract nearby nodes
+        let mouse = { x: -999, y: -999 };
+        canvas.addEventListener("mousemove", (e) => {
+          const rect = canvas.getBoundingClientRect();
+          mouse.x = e.clientX - rect.left;
+          mouse.y = e.clientY - rect.top;
+        });
+        canvas.addEventListener("mouseleave", () => {
+          mouse = { x: -999, y: -999 };
+        });
+
+        // Initialise nodes at random positions with random velocities
+        const nodes = Array.from({ length: COUNT }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * SPEED,
+          vy: (Math.random() - 0.5) * SPEED,
+          r: Math.random() * 2 + 1.5, // radius 1.5–3.5 px
+        }));
+
+        function tick() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Move each node, bounce off walls
+          for (const n of nodes) {
+            // Subtle mouse attraction — nodes within 120 px nudge toward cursor
+            const dx = mouse.x - n.x;
+            const dy = mouse.y - n.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              n.vx += (dx / dist) * 0.03;
+              n.vy += (dy / dist) * 0.03;
+            }
+
+            // Clamp speed so attraction never makes things frantic
+            const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+            if (speed > SPEED * 3) {
+              n.vx = (n.vx / speed) * SPEED * 3;
+              n.vy = (n.vy / speed) * SPEED * 3;
+            }
+
+            n.x += n.vx;
+            n.y += n.vy;
+
+            if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+            if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+          }
+
+          // Draw edges between close-enough node pairs
+          for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+              const dx = nodes[i].x - nodes[j].x;
+              const dy = nodes[i].y - nodes[j].y;
+              const d = Math.sqrt(dx * dx + dy * dy);
+              if (d < LINK_DIST) {
+                // Fade edge opacity with distance
+                const alpha = (1 - d / LINK_DIST) * 0.4;
+                ctx.strokeStyle = `rgba(0, 173, 181, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          // Draw nodes on top of edges
+          for (const n of nodes) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+            ctx.fillStyle = NODE_COLOR;
+            ctx.fill();
+          }
+
+          requestAnimationFrame(tick);
+        }
+
+        tick();
+      })();
+
+      // ─────────────────────────────────────────
+      // 2. TYPEWRITER — hero name
+      //    Types out the name one character at a
+      //    time, then triggers the role morph.
+      //    The name comes from translations[lang].name
+      // ─────────────────────────────────────────
+      function typewriterName() {
+        const el = document.getElementById("hero-name");
+        const text = t("name");
+        let i = 0;
+
+        function type() {
+          if (i <= text.length) {
+            el.textContent = text.slice(0, i);
+            i++;
+            setTimeout(type, 70); // ms per character — adjust to taste
+          } else {
+            // Name done → start role morph after a short pause
+            setTimeout(startRoleMorph, 400);
+          }
+        }
+
+        // Small delay before typing begins so the page has settled
+        setTimeout(type, 600);
+      }
+
+      // ─────────────────────────────────────────
+      // 3. ROLE MORPH
+      //    Cycles through translations[lang].roles.
+      //    Each string is typed out, held, then
+      //    deleted before the next one is typed.
+      //
+      //    ✏️  Edit the roles list in the translations
+      //    object above — don't change anything here.
+      // ─────────────────────────────────────────
+      function startRoleMorph() {
+        const el = document.getElementById("hero-role");
+        const tagline = document.getElementById("hero-tagline");
+        const roles = t("roles"); // pulls from translations[lang].roles
+
+        let roleIndex = 0;
+        let charIndex = 0;
+        let deleting = false;
+
+        const TYPE_SPEED = 60; // ms per char when typing
+        const DELETE_SPEED = 35; // ms per char when deleting
+        const HOLD_TIME = 1800; // ms to hold full string before deleting
+
+        // Fade in the tagline once the role morph starts
+        tagline.style.opacity = "1";
+
+        function morph() {
+          const current = roles[roleIndex];
+
+          if (!deleting) {
+            el.textContent = current.slice(0, charIndex + 1);
+            charIndex++;
+            if (charIndex === current.length) {
+              deleting = true;
+              setTimeout(morph, HOLD_TIME);
+              return;
+            }
+          } else {
+            el.textContent = current.slice(0, charIndex - 1);
+            charIndex--;
+            if (charIndex === 0) {
+              deleting = false;
+              roleIndex = (roleIndex + 1) % roles.length;
+            }
+          }
+
+          setTimeout(morph, deleting ? DELETE_SPEED : TYPE_SPEED);
+        }
+
+        morph();
+      }
     </script>
   </body>
-  <footer>
-    <p>&copy; 2026 My First Website. All rights reserved.</p>
-  </footer>
 </html>

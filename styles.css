@@ -1,0 +1,278 @@
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   Central place for all colors, radii, etc.
+
+   Two-layer system:
+   · Primitives  — what the color IS  (--color-*)
+   · Semantic    — what the color DOES (--bg, --surface, etc.)
+
+   To add a light mode in the future, override only the
+   semantic tokens inside a [data-theme="light"] selector —
+   the primitives stay unchanged.
+════════════════════════════════════════════ */
+:root {
+  /* ── Primitives ── */
+  --color-gray-900:  #222831;
+  --color-gray-700:  #393e46;
+  --color-gray-200:  #eeeeee;
+  --color-gray-50:   #f7f7f7;
+  --color-teal-500:  #00adb5;
+  --color-teal-700:  #00838a;
+  --color-teal-200:  #b2dfdb;
+
+  /* ── Semantic aliases (use these in components) ── */
+  --bg:          var(--color-gray-900);  /* page background          */
+  --surface:     var(--color-gray-700);  /* cards, nav, elevated UI  */
+  --text:        var(--color-gray-200);  /* body text                */
+  --text-muted:  var(--color-gray-50);   /* secondary / faded text   */
+  --accent:      var(--color-teal-500);  /* links, buttons, highlights */
+  --accent-dark: var(--color-teal-700);  /* hover / active states    */
+  --accent-soft: var(--color-teal-200);  /* subtle tinted backgrounds */
+
+  /* ── Keep old names as aliases so nothing breaks ──
+     Remove these once all components use semantic names. */
+  --dark-base:  var(--bg);
+  --dark-gray:  var(--surface);
+  --light-gray: var(--text);
+  --off-white:  var(--text-muted);
+  --teal:       var(--accent);
+  --teal-dark:  var(--accent-dark);
+  --teal-light: var(--accent-soft);
+
+  /* ── Radii ── */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-full: 9999px; /* pill / full-round */
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "DM Sans", "Jost", system-ui, sans-serif;
+  background: var(--dark-base);
+  color: var(--light-gray);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--teal-dark);
+}
+
+/* ═══════════════════════════════════════════
+   HERO SECTION
+════════════════════════════════════════════ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--dark-base);
+}
+
+/* Canvas fills the hero section exactly */
+#particle-canvas {
+  position: absolute;
+  inset: 0; /* top/right/bottom/left: 0 */
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* let mouse events pass through to canvas listeners */
+}
+
+/* Re-enable pointer events on the canvas itself for mouse tracking */
+#particle-canvas {
+  pointer-events: auto;
+}
+
+/* Card wrapping the hero content — sits above the particle canvas */
+.hero-card {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2.5rem;
+  max-width: 580px;
+  width: calc(100% - 2rem); /* full-width with side breathing room on mobile */
+
+  /* Subtle border so the card edge reads against the dark background */
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  /* Soft shadow to lift it off the canvas */
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Content inside the card */
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+/* ── Round profile photo ── */
+.hero-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+
+  /* Teal ring around the photo */
+  border: 3px solid var(--teal);
+
+  /* Soft glow that echoes the particle color */
+  box-shadow: 0 0 0 6px rgba(0, 173, 181, 0.15);
+
+  margin-bottom: 0.5rem;
+}
+
+/* ── Name ── */
+.hero-name {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+  color: var(--off-white);
+  letter-spacing: -0.02em;
+  min-height: 1.2em; /* prevents layout shift while typing */
+}
+
+/* ── Animated role line ── */
+.hero-role {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  font-weight: 400;
+  color: var(--teal);
+  min-height: 1.6em;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Blinking cursor */
+.cursor {
+  display: inline-block;
+  color: var(--teal);
+  animation: blink 1s step-start infinite;
+  font-weight: 300;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── Static tagline ── */
+.hero-tagline {
+  font-size: 0.9rem;
+  color: rgba(238, 238, 238, 0.55);
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  margin-top: -0.25rem;
+}
+
+/* ── CTA buttons ── */
+.hero-ctas {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-full); /* fully rounded pill */
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--teal);
+  color: var(--dark-base);
+}
+.btn-primary:hover {
+  background: var(--teal-dark);
+  color: var(--off-white);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--teal);
+  border: 1.5px solid var(--teal);
+}
+.btn-secondary:hover {
+  background: rgba(0, 173, 181, 0.1);
+  color: var(--teal-light);
+}
+
+/* ═══════════════════════════════════════════
+   CARDS  (reusable, used throughout the site)
+════════════════════════════════════════════ */
+.card {
+  background: var(--dark-gray);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════ */
+.site-footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.85rem;
+  color: rgba(238, 238, 238, 0.4);
+  background: var(--dark-base);
+  border-top: 1px solid var(--dark-gray);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .hero-photo {
+    width: 110px;
+    height: 110px;
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+    align-items: center;
+  }
+}
