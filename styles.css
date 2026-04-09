@@ -12,37 +12,37 @@
 ════════════════════════════════════════════ */
 :root {
   /* ── Primitives ── */
-  --color-gray-900:  #222831;
-  --color-gray-700:  #393e46;
-  --color-gray-200:  #eeeeee;
-  --color-gray-50:   #f7f7f7;
-  --color-teal-500:  #00adb5;
-  --color-teal-700:  #00838a;
-  --color-teal-200:  #b2dfdb;
+  --color-gray-900: #222831;
+  --color-gray-700: #393e46;
+  --color-gray-200: #eeeeee;
+  --color-gray-50: #f7f7f7;
+  --color-teal-500: #00adb5;
+  --color-teal-700: #00838a;
+  --color-teal-200: #b2dfdb;
 
   /* ── Semantic aliases (use these in components) ── */
-  --bg:          var(--color-gray-900);  /* page background          */
-  --surface:     var(--color-gray-700);  /* cards, nav, elevated UI  */
-  --text:        var(--color-gray-200);  /* body text                */
-  --text-muted:  var(--color-gray-50);   /* secondary / faded text   */
-  --accent:      var(--color-teal-500);  /* links, buttons, highlights */
-  --accent-dark: var(--color-teal-700);  /* hover / active states    */
-  --accent-soft: var(--color-teal-200);  /* subtle tinted backgrounds */
+  --bg: var(--color-gray-900); /* page background          */
+  --surface: var(--color-gray-700); /* cards, nav, elevated UI  */
+  --text: var(--color-gray-200); /* body text                */
+  --text-muted: var(--color-gray-50); /* secondary / faded text   */
+  --accent: var(--color-teal-500); /* links, buttons, highlights */
+  --accent-dark: var(--color-teal-700); /* hover / active states    */
+  --accent-soft: var(--color-teal-200); /* subtle tinted backgrounds */
 
   /* ── Keep old names as aliases so nothing breaks ──
      Remove these once all components use semantic names. */
-  --dark-base:  var(--bg);
-  --dark-gray:  var(--surface);
+  --dark-base: var(--bg);
+  --dark-gray: var(--surface);
   --light-gray: var(--text);
-  --off-white:  var(--text-muted);
-  --teal:       var(--accent);
-  --teal-dark:  var(--accent-dark);
+  --off-white: var(--text-muted);
+  --teal: var(--accent);
+  --teal-dark: var(--accent-dark);
   --teal-light: var(--accent-soft);
 
   /* ── Radii ── */
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-full: 9999px; /* pill / full-round */
 }
 
@@ -62,7 +62,7 @@ html {
 }
 
 body {
-  font-family: "DM Sans", "Jost", system-ui, sans-serif;
+  font-family: "DM Sans", system-ui, sans-serif;
   background: var(--dark-base);
   color: var(--light-gray);
   line-height: 1.6;
@@ -74,6 +74,81 @@ a {
 }
 a:hover {
   color: var(--teal-dark);
+}
+
+/* ═══════════════════════════════════════════
+   NAV BAR
+   Fixed across all pages, overlays content.
+   z-index keeps it above the hero canvas.
+════════════════════════════════════════════ */
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+
+  /* Subtle frosted-glass effect so it reads over both dark and light content */
+  background: rgba(34, 40, 49, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Logo — uses Jost for a distinctive, geometric feel */
+.nav-logo {
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.nav-logo:hover {
+  color: var(--accent);
+}
+
+/* Nav link list */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(238, 238, 238, 0.6);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Active page link */
+.nav-link.active {
+  color: var(--accent);
+  background: rgba(0, 173, 181, 0.1);
+}
+
+/* Push hero content down so it doesn't hide behind the fixed nav */
+.hero {
+  padding-top: 72px;
 }
 
 /* ═══════════════════════════════════════════
@@ -231,6 +306,40 @@ a:hover {
 .btn-secondary:hover {
   background: rgba(0, 173, 181, 0.1);
   color: var(--teal-light);
+}
+
+/* ── Social icons ── */
+.hero-socials {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+  justify-content: center;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  color: rgba(238, 238, 238, 0.5);
+  border: 1px solid rgba(238, 238, 238, 0.1);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.social-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.social-icon:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 /* ═══════════════════════════════════════════
