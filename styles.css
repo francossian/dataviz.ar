@@ -1,57 +1,52 @@
 /* ═══════════════════════════════════════════
    DESIGN TOKENS
-   Central place for all colors, radii, etc.
-
    Two-layer system:
    · Primitives  — what the color IS  (--color-*)
    · Semantic    — what the color DOES (--bg, --surface, etc.)
-
-   To add a light mode in the future, override only the
-   semantic tokens inside a [data-theme="light"] selector —
-   the primitives stay unchanged.
 ════════════════════════════════════════════ */
 :root {
   /* ── Primitives ── */
-  --color-gray-900: #222831;
-  --color-gray-700: #393e46;
-  --color-gray-200: #eeeeee;
-  --color-gray-50: #f7f7f7;
-  --color-teal-500: #00adb5;
-  --color-teal-700: #00838a;
-  --color-teal-200: #b2dfdb;
+  --color-navy-900:  #072e51;   /* deep Argentina-flag navy    */
+  --color-navy-700:  #0d3d65;   /* slightly lighter navy (cards) */
+  --color-sky-400:   #75aadb;   /* Argentina-flag light blue   */
+  --color-sky-600:   #5a8ab8;   /* darker sky (hover states)   */
+  --color-sky-200:   #b8d4ec;   /* very light sky (soft tints) */
+  --color-terra-600: #FC8181;   /* warm terracotta (CTAs)      */
+  --color-terra-800: #f56565;   /* darker terra (hover)        */
+  --color-white:     #ffffff;
 
-  /* ── Semantic aliases (use these in components) ── */
-  --bg: var(--color-gray-900); /* page background          */
-  --surface: var(--color-gray-700); /* cards, nav, elevated UI  */
-  --text: var(--color-gray-200); /* body text                */
-  --text-muted: var(--color-gray-50); /* secondary / faded text   */
-  --accent: var(--color-teal-500); /* links, buttons, highlights */
-  --accent-dark: var(--color-teal-700); /* hover / active states    */
-  --accent-soft: var(--color-teal-200); /* subtle tinted backgrounds */
+  /* ── Semantic aliases — use these in components ── */
+  --bg:          var(--color-navy-900);   /* page background           */
+  --surface:     var(--color-navy-700);   /* cards, elevated surfaces  */
+  --text:        var(--color-white);      /* primary text              */
+  --text-muted:  rgba(255, 255, 255, 0.55); /* secondary / faded text  */
+  --accent:      var(--color-sky-400);    /* links, icons, particles   */
+  --accent-dark: var(--color-sky-600);    /* hover / active accent     */
+  --accent-soft: var(--color-sky-200);    /* subtle tinted backgrounds */
+  --warm:        var(--color-terra-600);  /* primary CTAs, warm pops   */
+  --warm-dark:   var(--color-terra-800);  /* hover for warm buttons    */
 
-  /* ── Keep old names as aliases so nothing breaks ──
-     Remove these once all components use semantic names. */
-  --dark-base: var(--bg);
-  --dark-gray: var(--surface);
+  /* ── Legacy aliases — kept so old class names still resolve ── */
+  --dark-base:  var(--bg);
+  --dark-gray:  var(--surface);
   --light-gray: var(--text);
-  --off-white: var(--text-muted);
-  --teal: var(--accent);
-  --teal-dark: var(--accent-dark);
+  --off-white:  var(--text);
+  --teal:       var(--accent);
+  --teal-dark:  var(--accent-dark);
   --teal-light: var(--accent-soft);
 
   /* ── Radii ── */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-full: 9999px; /* pill / full-round */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-full: 9999px;
 }
+
 
 /* ═══════════════════════════════════════════
    RESET & BASE
 ════════════════════════════════════════════ */
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -63,23 +58,22 @@ html {
 
 body {
   font-family: "DM Sans", system-ui, sans-serif;
-  background: var(--dark-base);
-  color: var(--light-gray);
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
 }
 
 a {
-  color: var(--teal);
+  color: var(--accent);
   text-decoration: none;
 }
 a:hover {
-  color: var(--teal-dark);
+  color: var(--accent-dark);
 }
+
 
 /* ═══════════════════════════════════════════
    NAV BAR
-   Fixed across all pages, overlays content.
-   z-index keeps it above the hero canvas.
 ════════════════════════════════════════════ */
 .site-nav {
   position: fixed;
@@ -91,21 +85,18 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 2rem;
-
-  /* Subtle frosted-glass effect so it reads over both dark and light content */
-  background: rgba(34, 40, 49, 0.75);
+  background: rgba(7, 46, 81, 0.85);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Logo — uses Jost for a distinctive, geometric feel */
 .nav-logo {
   font-family: "Jost", sans-serif;
   font-weight: 600;
   font-size: 1.15rem;
   letter-spacing: 0.04em;
-  color: var(--text-muted);
+  color: var(--text);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -113,7 +104,6 @@ a:hover {
   color: var(--accent);
 }
 
-/* Nav link list */
 .nav-links {
   list-style: none;
   display: flex;
@@ -126,30 +116,28 @@ a:hover {
   font-family: "DM Sans", sans-serif;
   font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(238, 238, 238, 0.6);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-full);
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .nav-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-/* Active page link */
 .nav-link.active {
   color: var(--accent);
-  background: rgba(0, 173, 181, 0.1);
+  background: rgba(117, 170, 219, 0.15);
 }
 
-/* Push hero content down so it doesn't hide behind the fixed nav */
+/* Push hero content below the fixed nav */
 .hero {
   padding-top: 72px;
 }
+
 
 /* ═══════════════════════════════════════════
    HERO SECTION
@@ -161,24 +149,18 @@ a:hover {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--dark-base);
+  background: var(--bg);
 }
 
-/* Canvas fills the hero section exactly */
 #particle-canvas {
   position: absolute;
-  inset: 0; /* top/right/bottom/left: 0 */
+  inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* let mouse events pass through to canvas listeners */
-}
-
-/* Re-enable pointer events on the canvas itself for mouse tracking */
-#particle-canvas {
   pointer-events: auto;
 }
 
-/* Card wrapping the hero content — sits above the particle canvas */
+/* Card wrapping the hero content */
 .hero-card {
   position: relative;
   z-index: 1;
@@ -186,16 +168,11 @@ a:hover {
   border-radius: var(--radius-lg);
   padding: 3rem 2.5rem;
   max-width: 580px;
-  width: calc(100% - 2rem); /* full-width with side breathing room on mobile */
-
-  /* Subtle border so the card edge reads against the dark background */
-  border: 1px solid rgba(255, 255, 255, 0.06);
-
-  /* Soft shadow to lift it off the canvas */
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  width: calc(100% - 2rem);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Content inside the card */
 .hero-content {
   display: flex;
   flex-direction: column;
@@ -210,13 +187,8 @@ a:hover {
   height: 140px;
   border-radius: var(--radius-full);
   object-fit: cover;
-
-  /* Teal ring around the photo */
-  border: 3px solid var(--teal);
-
-  /* Soft glow that echoes the particle color */
-  box-shadow: 0 0 0 6px rgba(0, 173, 181, 0.15);
-
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 0 6px rgba(117, 170, 219, 0.15);
   margin-bottom: 0.5rem;
 }
 
@@ -224,39 +196,36 @@ a:hover {
 .hero-name {
   font-size: clamp(2rem, 5vw, 3.2rem);
   font-weight: 700;
-  color: var(--off-white);
+  color: var(--text);
   letter-spacing: -0.02em;
-  min-height: 1.2em; /* prevents layout shift while typing */
+  min-height: 1.2em;
 }
 
 /* ── Animated role line ── */
 .hero-role {
   font-size: clamp(1rem, 2.5vw, 1.3rem);
   font-weight: 400;
-  color: var(--teal);
+  color: var(--accent);
   min-height: 1.6em;
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-/* Blinking cursor */
 .cursor {
   display: inline-block;
-  color: var(--teal);
+  color: var(--accent);
   animation: blink 1s step-start infinite;
   font-weight: 300;
 }
 @keyframes blink {
-  50% {
-    opacity: 0;
-  }
+  50% { opacity: 0; }
 }
 
 /* ── Static tagline ── */
 .hero-tagline {
   font-size: 0.9rem;
-  color: rgba(238, 238, 238, 0.55);
+  color: var(--text-muted);
   letter-spacing: 0.04em;
   opacity: 0;
   transition: opacity 0.8s ease;
@@ -275,13 +244,10 @@ a:hover {
 .btn {
   display: inline-block;
   padding: 0.6rem 1.5rem;
-  border-radius: var(--radius-full); /* fully rounded pill */
+  border-radius: var(--radius-full);
   font-size: 0.95rem;
   font-weight: 500;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.15s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
   cursor: pointer;
 }
 
@@ -289,23 +255,25 @@ a:hover {
   transform: translateY(-2px);
 }
 
+/* Primary: terracotta — warm pop against the cool navy palette */
 .btn-primary {
-  background: var(--teal);
-  color: var(--dark-base);
+  background: var(--warm);
+  color: var(--text);
 }
 .btn-primary:hover {
-  background: var(--teal-dark);
-  color: var(--off-white);
+  background: var(--warm-dark);
+  color: var(--text);
 }
 
+/* Secondary: sky blue outline */
 .btn-secondary {
   background: transparent;
-  color: var(--teal);
-  border: 1.5px solid var(--teal);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
 }
 .btn-secondary:hover {
-  background: rgba(0, 173, 181, 0.1);
-  color: var(--teal-light);
+  background: rgba(117, 170, 219, 0.12);
+  color: var(--accent-soft);
 }
 
 /* ── Social icons ── */
@@ -323,12 +291,9 @@ a:hover {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  color: rgba(238, 238, 238, 0.5);
-  border: 1px solid rgba(238, 238, 238, 0.1);
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.15s ease;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 
 .social-icon svg {
@@ -341,6 +306,22 @@ a:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
 }
+
+
+/* ── Logo dot hover (index.html inline SVG) ── */
+.coming-soon-logo {
+  display: block;
+}
+
+.coming-soon-logo .logo-dot {
+  transition: fill 0.2s ease;
+  cursor: pointer;
+}
+
+.coming-soon-logo .logo-dot:hover {
+  fill: #FC8181;
+}
+
 
 /* ── Coming soon card (index.html) ── */
 .coming-soon-card {
@@ -357,9 +338,9 @@ a:hover {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
-  background: rgba(0, 173, 181, 0.1);
-  border: 1px solid rgba(0, 173, 181, 0.25);
+  color: var(--warm);
+  background: rgba(252, 129, 129, 0.15);
+  border: 1px solid rgba(252, 129, 129, 0.35);
   border-radius: var(--radius-full);
   padding: 0.25rem 0.85rem;
 }
@@ -368,33 +349,33 @@ a:hover {
   font-family: "Jost", sans-serif;
   font-size: clamp(2.2rem, 6vw, 3.5rem);
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text);
   letter-spacing: 0.02em;
 }
 
 .coming-soon-sub {
   font-size: 0.95rem;
-  color: rgba(238, 238, 238, 0.5);
+  color: var(--text-muted);
   line-height: 1.7;
 }
 
 
 /* ═══════════════════════════════════════════
-   CARDS  (reusable, used throughout the site)
+   CARDS  (reusable throughout the site)
 ════════════════════════════════════════════ */
 .card {
-  background: var(--dark-gray);
+  background: var(--surface);
   border-radius: var(--radius-md);
   padding: 1.5rem;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+
 
 /* ═══════════════════════════════════════════
    FOOTER
@@ -403,10 +384,11 @@ a:hover {
   text-align: center;
   padding: 2rem;
   font-size: 0.85rem;
-  color: rgba(238, 238, 238, 0.4);
-  background: var(--dark-base);
-  border-top: 1px solid var(--dark-gray);
+  color: rgba(255, 255, 255, 0.35);
+  background: var(--bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
+
 
 /* ═══════════════════════════════════════════
    RESPONSIVE

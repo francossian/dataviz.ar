@@ -69,8 +69,9 @@
               href="https://www.prtfol.com/franco-guiragossian"
               class="btn btn-primary"
               id="cta-portfolio"
+              title="View portfolio"
             ></a>
-            <a href="/" class="btn btn-secondary" id="cta-home"></a>
+            <a href="/" class="btn btn-secondary" id="cta-home" title="Home"></a>
           </div>
 
           <!-- Social icons -->
@@ -194,7 +195,7 @@
         const COUNT = 60;
         const LINK_DIST = 130;
         const SPEED = 0.4;
-        const NODE_COLOR = "rgba(0, 173, 181, 0.6)";
+        const NODE_COLOR = "rgba(117, 170, 219, 0.6)";
 
         let mouse = { x: -999, y: -999 };
         canvas.addEventListener("mousemove", (e) => {
@@ -240,7 +241,7 @@
                 dy = nodes[i].y - nodes[j].y;
               const d = Math.sqrt(dx * dx + dy * dy);
               if (d < LINK_DIST) {
-                ctx.strokeStyle = `rgba(0, 173, 181, ${(1 - d / LINK_DIST) * 0.4})`;
+                ctx.strokeStyle = `rgba(117, 170, 219, ${(1 - d / LINK_DIST) * 0.4})`;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(nodes[i].x, nodes[i].y);
