@@ -6,47 +6,48 @@
 ════════════════════════════════════════════ */
 :root {
   /* ── Primitives ── */
-  --color-navy-900:  #072e51;   /* deep Argentina-flag navy    */
-  --color-navy-700:  #0d3d65;   /* slightly lighter navy (cards) */
-  --color-sky-400:   #75aadb;   /* Argentina-flag light blue   */
-  --color-sky-600:   #5a8ab8;   /* darker sky (hover states)   */
-  --color-sky-200:   #b8d4ec;   /* very light sky (soft tints) */
-  --color-terra-600: #FC8181;   /* warm terracotta (CTAs)      */
-  --color-terra-800: #f56565;   /* darker terra (hover)        */
-  --color-white:     #ffffff;
+  --color-navy-900: #072e51; /* deep Argentina-flag navy    */
+  --color-navy-700: #0d3d65; /* slightly lighter navy (cards) */
+  --color-sky-400: #75aadb; /* Argentina-flag light blue   */
+  --color-sky-600: #5a8ab8; /* darker sky (hover states)   */
+  --color-sky-200: #b8d4ec; /* very light sky (soft tints) */
+  --color-terra-600: #fc8181; /* warm terracotta (CTAs)      */
+  --color-terra-800: #f56565; /* darker terra (hover)        */
+  --color-white: #ffffff;
 
   /* ── Semantic aliases — use these in components ── */
-  --bg:          var(--color-navy-900);   /* page background           */
-  --surface:     var(--color-navy-700);   /* cards, elevated surfaces  */
-  --text:        var(--color-white);      /* primary text              */
-  --text-muted:  rgba(255, 255, 255, 0.55); /* secondary / faded text  */
-  --accent:      var(--color-sky-400);    /* links, icons, particles   */
-  --accent-dark: var(--color-sky-600);    /* hover / active accent     */
-  --accent-soft: var(--color-sky-200);    /* subtle tinted backgrounds */
-  --warm:        var(--color-terra-600);  /* primary CTAs, warm pops   */
-  --warm-dark:   var(--color-terra-800);  /* hover for warm buttons    */
+  --bg: var(--color-navy-900); /* page background           */
+  --surface: var(--color-navy-700); /* cards, elevated surfaces  */
+  --text: var(--color-white); /* primary text              */
+  --text-muted: rgba(255, 255, 255, 0.55); /* secondary / faded text  */
+  --accent: var(--color-sky-400); /* links, icons, particles   */
+  --accent-dark: var(--color-sky-600); /* hover / active accent     */
+  --accent-soft: var(--color-sky-200); /* subtle tinted backgrounds */
+  --warm: var(--color-terra-600); /* primary CTAs, warm pops   */
+  --warm-dark: var(--color-terra-800); /* hover for warm buttons    */
 
   /* ── Legacy aliases — kept so old class names still resolve ── */
-  --dark-base:  var(--bg);
-  --dark-gray:  var(--surface);
+  --dark-base: var(--bg);
+  --dark-gray: var(--surface);
   --light-gray: var(--text);
-  --off-white:  var(--text);
-  --teal:       var(--accent);
-  --teal-dark:  var(--accent-dark);
+  --off-white: var(--text);
+  --teal: var(--accent);
+  --teal-dark: var(--accent-dark);
   --teal-light: var(--accent-soft);
 
   /* ── Radii ── */
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
 }
-
 
 /* ═══════════════════════════════════════════
    RESET & BASE
 ════════════════════════════════════════════ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -71,7 +72,6 @@ a:hover {
   color: var(--accent-dark);
 }
 
-
 /* ═══════════════════════════════════════════
    NAV BAR
 ════════════════════════════════════════════ */
@@ -81,14 +81,35 @@ a:hover {
   left: 0;
   right: 0;
   z-index: 100;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 2rem;
+  padding: 0.75rem 2rem;
   background: rgba(7, 46, 81, 0.85);
   -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Center column: SVG logo */
+.nav-center-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+.nav-center-logo:hover {
+  opacity: 1;
+}
+.nav-center-logo img {
+  display: block;
+}
+
+/* Right column: push nav links to the right */
+.site-nav nav {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .nav-logo {
@@ -120,7 +141,9 @@ a:hover {
   text-decoration: none;
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-full);
-  transition: color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
 .nav-link:hover {
@@ -137,7 +160,6 @@ a:hover {
 .hero {
   padding-top: 72px;
 }
-
 
 /* ═══════════════════════════════════════════
    HERO SECTION
@@ -219,7 +241,9 @@ a:hover {
   font-weight: 300;
 }
 @keyframes blink {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 
 /* ── Static tagline ── */
@@ -247,7 +271,10 @@ a:hover {
   border-radius: var(--radius-full);
   font-size: 0.95rem;
   font-weight: 500;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
   cursor: pointer;
 }
 
@@ -293,7 +320,10 @@ a:hover {
   border-radius: var(--radius-full);
   color: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .social-icon svg {
@@ -307,7 +337,6 @@ a:hover {
   transform: translateY(-2px);
 }
 
-
 /* ── Logo dot hover (index.html inline SVG) ── */
 .coming-soon-logo {
   display: block;
@@ -315,13 +344,12 @@ a:hover {
 
 .coming-soon-logo .logo-dot {
   transition: fill 0.2s ease;
-  cursor: pointer;
 }
 
-.coming-soon-logo .logo-dot:hover {
-  fill: #FC8181;
+.coming-soon-logo .logo-dot:hover,
+.coming-soon-logo .logo-dot.clicked {
+  fill: #fc8181;
 }
-
 
 /* ── Coming soon card (index.html) ── */
 .coming-soon-card {
@@ -359,7 +387,6 @@ a:hover {
   line-height: 1.7;
 }
 
-
 /* ═══════════════════════════════════════════
    CARDS  (reusable throughout the site)
 ════════════════════════════════════════════ */
@@ -368,14 +395,15 @@ a:hover {
   border-radius: var(--radius-md);
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
-
 
 /* ═══════════════════════════════════════════
    FOOTER
@@ -388,7 +416,6 @@ a:hover {
   background: var(--bg);
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
-
 
 /* ═══════════════════════════════════════════
    RESPONSIVE
