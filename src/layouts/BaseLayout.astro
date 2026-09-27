@@ -1,0 +1,61 @@
+---
+/**
+ * BaseLayout — the single source of the HTML document shell.
+ *
+ * Every page ends up here (directly, or through MainLayout), so <head>
+ * concerns — charset, viewport, meta description, fonts, global CSS and,
+ * later, analytics — live in exactly one place instead of being copied
+ * into each page like the old hand-written .html files did.
+ *
+ * It renders NO visible chrome (nav/footer). That's MainLayout's job, which
+ * lets a page opt out of chrome by using BaseLayout directly.
+ */
+import "../styles/global.css";
+
+interface Props {
+  /** Page-specific title; the site name is appended automatically. */
+  title?: string;
+  description?: string;
+}
+
+const SITE_NAME = "dataviz.ar";
+const {
+  title,
+  description = "Franco Guiragossian — data analysis, survey design and data visualization.",
+} = Astro.props;
+
+const fullTitle = title ? `${title} — ${SITE_NAME}` : `Franco Guiragossian — ${SITE_NAME}`;
+// Canonical URL built from `site` in astro.config, so it's always absolute.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/images/logo/logo.svg" />
+
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+
+    <!-- Jost for the nav logo (geometric, distinctive) — DM Sans for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Lets a page inject extra <head> tags (e.g. article meta on blog posts) -->
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

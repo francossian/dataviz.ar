@@ -1,0 +1,44 @@
+---
+/**
+ * Site nav — fixed bar, three-column grid (wordmark · logo · links).
+ *
+ * The "active" link used to be hard-coded per HTML file. Now it's derived
+ * from the current URL, so there's one nav definition for every page.
+ */
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/franco-guiragossian", label: "About" },
+  { href: "/portfolio", label: "Portfolio" },
+];
+
+// Strip a trailing slash so "/portfolio/" and "/portfolio" compare equal.
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+// Home matches exactly; other links also match their sub-pages
+// (e.g. /portfolio/something keeps "Portfolio" highlighted).
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+---
+
+<header class="site-nav">
+  <a href="/" class="nav-logo">dataviz.ar</a>
+  <a href="/" class="nav-center-logo" aria-label="dataviz.ar home">
+    <img src="/images/logo/logo-white.svg" alt="dataviz.ar logo" height="38" />
+  </a>
+  <nav>
+    <ul class="nav-links">
+      {
+        links.map(({ href, label }) => (
+          <li>
+            <a
+              href={href}
+              class:list={["nav-link", { active: isActive(href) }]}
+              aria-current={isActive(href) ? "page" : undefined}
+            >
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
