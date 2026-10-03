@@ -60,7 +60,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       Language switch. Deliberately an INLINE, render-blocking script at the
       end of <body>: by the time it runs every element exists, and it
       finishes before the browser's first paint — so a visitor who chose
-      English never sees a flash of Spanish. (A normal bundled <script> is a
+      English never sees a flash of Spanish. (A normal bundled script tag is a
       deferred module and could run after the first paint.)
       define:vars serializes the dictionaries into the script at build time.
     -->

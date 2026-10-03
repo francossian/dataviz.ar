@@ -2,10 +2,10 @@
 /**
  * ParticleNetwork — animated node-link background drawn on a <canvas>.
  *
- * Why an .astro component with a <script> rather than a React island:
+ * Why an .astro component with a script tag rather than a React island:
  * the animation is imperative canvas drawing with no UI state to re-render,
  * so React would add ~40 KB of runtime for nothing. Astro bundles this
- * <script> once per page as a small ES module, with zero framework JS.
+ * script once per page as a small ES module, with zero framework JS.
  *
  * Place it inside a positioned container (e.g. `.hero`); the canvas
  * absolutely fills its parent (see `.particle-canvas` in global.css).
