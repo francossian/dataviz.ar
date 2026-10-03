@@ -1,0 +1,15 @@
+{
+  "meta.description": "Franco Guiragossian — data analysis, survey design and data visualization.",
+  "nav.home": "Home",
+  "nav.about": "About",
+  "nav.portfolio": "Portfolio",
+  "lang.label": "Language",
+  "profile.roles": [
+    "Data analysis",
+    "Dashboard development",
+    "Data visualization",
+    "Survey design"
+  ],
+  "profile.cta_portfolio": "View portfolio",
+  "profile.cta_home": "Home"
+}

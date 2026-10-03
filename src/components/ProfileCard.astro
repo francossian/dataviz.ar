@@ -7,24 +7,23 @@
  * readers and no-JS visitors saw an empty card. Here:
  *   - the <h1> carries the real name in a visually-hidden span, and the
  *     typewriter types into a separate aria-hidden span;
- *   - the roles list travels to the script as a data-attribute (JSON),
- *     so the script needs no hard-coded copy.
+ *   - the roles lists (both languages) travel to the script as a
+ *     data-attribute (JSON), so the script needs no hard-coded copy and
+ *     can switch lists when the visitor toggles the language.
  */
 import SocialLinks from "./SocialLinks.astro";
+import { dictionaries, t } from "../i18n";
 
-// Strings grouped here so step 3a can swap them for i18n dictionary lookups.
 const name = "Franco Guiragossian";
-const roles = [
-  "Data analysis",
-  "Dashboard development",
-  "Data visualization",
-  "Survey design",
-];
-const tagline = roles.join(" · ");
+const rolesByLang = {
+  es: dictionaries.es["profile.roles"],
+  en: dictionaries.en["profile.roles"],
+};
+const tagline = t("profile.roles").join(" · ");
 ---
 
 <div class="hero-card">
-  <div class="hero-content" data-profile-card data-roles={JSON.stringify(roles)}>
+  <div class="hero-content" data-profile-card data-roles={JSON.stringify(rolesByLang)}>
     <img
       src="/images/franco.webp"
       alt={name}
@@ -44,11 +43,15 @@ const tagline = roles.join(" · ");
     </p>
 
     <!-- Fades in once the role animation starts (see .hero-tagline.is-visible) -->
-    <p class="hero-tagline" data-tagline>{tagline}</p>
+    <p class="hero-tagline" data-tagline data-i18n="profile.roles">{tagline}</p>
 
     <div class="hero-ctas">
-      <a href="/portfolio" class="btn btn-primary">View portfolio</a>
-      <a href="/" class="btn btn-secondary">Home</a>
+      <a href="/portfolio" class="btn btn-primary" data-i18n="profile.cta_portfolio"
+        >{t("profile.cta_portfolio")}</a
+      >
+      <a href="/" class="btn btn-secondary" data-i18n="profile.cta_home"
+        >{t("profile.cta_home")}</a
+      >
     </div>
 
     <SocialLinks />
@@ -69,7 +72,9 @@ const tagline = roles.join(" · ");
     const roleEl = card.querySelector<HTMLElement>("[data-role]")!;
     const taglineEl = card.querySelector<HTMLElement>("[data-tagline]")!;
     const name = nameEl.dataset.typewriter ?? "";
-    const roles: string[] = JSON.parse(card.dataset.roles ?? "[]");
+    const rolesByLang: Record<string, string[]> = JSON.parse(card.dataset.roles ?? "{}");
+    // <html lang> is kept current by BaseLayout's i18n script.
+    const currentRoles = () => rolesByLang[document.documentElement.lang] ?? rolesByLang.es;
 
     // 1. Type the name one character at a time, then hand off to the roles.
     let i = 0;
@@ -90,15 +95,31 @@ const tagline = roles.join(" · ");
       let roleIndex = 0,
         charIndex = 0,
         deleting = false;
+      // The one pending step of the loop. Keeping its id lets a language
+      // switch cancel it — otherwise a switch during HOLD_TIME would leave
+      // the line blank until the hold ran out.
+      let timer: ReturnType<typeof setTimeout>;
+
+      // On a language switch, restart typing the SAME role (same index) in
+      // the new language, right away. Cancelling first guarantees there is
+      // still only ever one loop running.
+      document.addEventListener("langchange", () => {
+        clearTimeout(timer);
+        charIndex = 0;
+        deleting = false;
+        roleEl.textContent = "";
+        morph();
+      });
 
       function morph() {
+        const roles = currentRoles();
         const current = roles[roleIndex];
         if (!deleting) {
           roleEl.textContent = current.slice(0, charIndex + 1);
           charIndex++;
           if (charIndex === current.length) {
             deleting = true;
-            setTimeout(morph, HOLD_TIME);
+            timer = setTimeout(morph, HOLD_TIME);
             return;
           }
         } else {
@@ -109,7 +130,7 @@ const tagline = roles.join(" · ");
             roleIndex = (roleIndex + 1) % roles.length;
           }
         }
-        setTimeout(morph, deleting ? DELETE_SPEED : TYPE_SPEED);
+        timer = setTimeout(morph, deleting ? DELETE_SPEED : TYPE_SPEED);
       }
       morph();
     }

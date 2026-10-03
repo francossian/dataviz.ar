@@ -1,0 +1,41 @@
+---
+/**
+ * ES / EN switch in the nav.
+ *
+ * Rendered with Spanish pressed (the build-time default); BaseLayout's
+ * inline script corrects aria-pressed before first paint if the visitor
+ * saved English. Clicking delegates to window.setSiteLang, which saves the
+ * choice, re-applies translations and fires a `langchange` event.
+ */
+import { t, DEFAULT_LANG } from "../i18n";
+
+const options = [
+  { lang: "es", label: "ES" },
+  { lang: "en", label: "EN" },
+] as const;
+---
+
+<div class="lang-toggle" role="group" aria-label={t("lang.label")} data-i18n-aria-label="lang.label">
+  {
+    options.map(({ lang, label }) => (
+      <button
+        type="button"
+        class="lang-option"
+        data-lang-option={lang}
+        lang={lang}
+        aria-pressed={lang === DEFAULT_LANG ? "true" : "false"}
+      >
+        {label}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-lang-option]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.langOption as "es" | "en";
+      window.setSiteLang?.(lang);
+    });
+  });
+</script>

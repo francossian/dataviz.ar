@@ -1,0 +1,15 @@
+{
+  "meta.description": "Franco Guiragossian — análisis de datos, diseño de encuestas y visualización de datos.",
+  "nav.home": "Inicio",
+  "nav.about": "Sobre mí",
+  "nav.portfolio": "Portfolio",
+  "lang.label": "Idioma",
+  "profile.roles": [
+    "Análisis de datos",
+    "Desarrollo de dashboards",
+    "Visualización de datos",
+    "Diseño de encuestas"
+  ],
+  "profile.cta_portfolio": "Ver portfolio",
+  "profile.cta_home": "Inicio"
+}

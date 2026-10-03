@@ -11,6 +11,7 @@
  * lets a page opt out of chrome by using BaseLayout directly.
  */
 import "../styles/global.css";
+import { dictionaries, t, DEFAULT_LANG, LANG_STORAGE_KEY } from "../i18n";
 
 interface Props {
   /** Page-specific title; the site name is appended automatically. */
@@ -19,10 +20,7 @@ interface Props {
 }
 
 const SITE_NAME = "dataviz.ar";
-const {
-  title,
-  description = "Franco Guiragossian — data analysis, survey design and data visualization.",
-} = Astro.props;
+const { title, description = t("meta.description") } = Astro.props;
 
 const fullTitle = title ? `${title} — ${SITE_NAME}` : `Franco Guiragossian — ${SITE_NAME}`;
 // Canonical URL built from `site` in astro.config, so it's always absolute.
@@ -30,7 +28,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={DEFAULT_LANG}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -57,5 +55,63 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body>
     <slot />
+
+    <!--
+      Language switch. Deliberately an INLINE, render-blocking script at the
+      end of <body>: by the time it runs every element exists, and it
+      finishes before the browser's first paint — so a visitor who chose
+      English never sees a flash of Spanish. (A normal bundled <script> is a
+      deferred module and could run after the first paint.)
+      define:vars serializes the dictionaries into the script at build time.
+    -->
+    <script is:inline define:vars={{ dictionaries, DEFAULT_LANG, LANG_STORAGE_KEY }}>
+      function readStoredLang() {
+        // localStorage can throw (privacy mode, blocked storage) — fall back.
+        try {
+          const v = localStorage.getItem(LANG_STORAGE_KEY);
+          return v === "es" || v === "en" ? v : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function applyLang(lang) {
+        const dict = dictionaries[lang];
+        document.documentElement.lang = lang;
+
+        // Text content. List values (e.g. profile.roles) render joined,
+        // which is what the tagline shows.
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const value = dict[el.dataset.i18n];
+          if (value !== undefined) {
+            el.textContent = Array.isArray(value) ? value.join(" · ") : value;
+          }
+        });
+        // Accessible names that live in attributes, not text.
+        document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+          const value = dict[el.dataset.i18nAriaLabel];
+          if (value !== undefined) el.setAttribute("aria-label", value);
+        });
+        document.querySelectorAll("[data-lang-option]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", String(btn.dataset.langOption === lang));
+        });
+      }
+
+      window.setSiteLang = function (lang) {
+        try {
+          localStorage.setItem(LANG_STORAGE_KEY, lang);
+        } catch {
+          /* not persisted, but still switch for this page view */
+        }
+        applyLang(lang);
+        // Lets components with their own state (e.g. the cycling roles)
+        // react without knowing about this script.
+        document.dispatchEvent(new CustomEvent("langchange", { detail: { lang } }));
+      };
+
+      // Pages are built in DEFAULT_LANG, so only rewrite when they differ.
+      const stored = readStoredLang();
+      if (stored && stored !== DEFAULT_LANG) applyLang(stored);
+    </script>
   </body>
 </html>

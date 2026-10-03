@@ -4,11 +4,16 @@
  *
  * The "active" link used to be hard-coded per HTML file. Now it's derived
  * from the current URL, so there's one nav definition for every page.
+ * Labels are i18n keys: rendered in Spanish at build time, swapped
+ * client-side via data-i18n (see BaseLayout).
  */
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/franco-guiragossian", label: "About" },
-  { href: "/portfolio", label: "Portfolio" },
+import LanguageToggle from "./LanguageToggle.astro";
+import { t, type I18nKey } from "../i18n";
+
+const links: { href: string; key: I18nKey }[] = [
+  { href: "/", key: "nav.home" },
+  { href: "/franco-guiragossian", key: "nav.about" },
+  { href: "/portfolio", key: "nav.portfolio" },
 ];
 
 // Strip a trailing slash so "/portfolio/" and "/portfolio" compare equal.
@@ -27,18 +32,20 @@ const isActive = (href: string) =>
   <nav>
     <ul class="nav-links">
       {
-        links.map(({ href, label }) => (
+        links.map(({ href, key }) => (
           <li>
             <a
               href={href}
               class:list={["nav-link", { active: isActive(href) }]}
               aria-current={isActive(href) ? "page" : undefined}
+              data-i18n={key}
             >
-              {label}
+              {t(key)}
             </a>
           </li>
         ))
       }
     </ul>
+    <LanguageToggle />
   </nav>
 </header>

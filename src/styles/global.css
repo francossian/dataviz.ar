@@ -124,6 +124,8 @@ a:hover {
 .site-nav nav {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .nav-logo {
@@ -155,6 +157,8 @@ a:hover {
   text-decoration: none;
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-full);
+  /* "Sobre mí" must never break onto two lines inside its pill */
+  white-space: nowrap;
   transition:
     color 0.2s ease,
     background 0.2s ease;
@@ -168,6 +172,48 @@ a:hover {
 .nav-link.active {
   color: var(--accent);
   background: rgba(117, 170, 219, 0.15);
+}
+
+/* ── Language toggle (ES / EN) ──
+   Same pill language as the nav links; the pressed option mirrors
+   .nav-link.active so "current language" reads like "current page". */
+.lang-toggle {
+  display: flex;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+}
+
+.lang-option {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.lang-option:hover {
+  color: var(--text);
+}
+
+/* aria-pressed is the single source of truth for the selected state, so
+   the styling can never disagree with what screen readers announce */
+.lang-option[aria-pressed="true"] {
+  color: var(--accent);
+  background: rgba(117, 170, 219, 0.15);
+}
+
+.lang-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Push hero content below the fixed nav */
@@ -440,6 +486,40 @@ a:hover {
 /* ═══════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════ */
+
+/* Narrow screens: the 3-column nav (wordmark · logo · links+toggle) no
+   longer fits on one line, so it becomes two rows:
+     row 1 — wordmark (left) and logo (right)
+     row 2 — page links + language toggle, centered, full width
+   The nav is fixed, so the hero's top padding grows to match its new
+   height (~100px instead of ~62px). */
+@media (max-width: 800px) {
+  .site-nav {
+    grid-template-columns: 1fr auto;
+    row-gap: 0.4rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .site-nav nav {
+    grid-column: 1 / -1;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .nav-center-logo img {
+    height: 30px;
+    width: auto;
+  }
+
+  .nav-link {
+    padding: 0.3rem 0.6rem;
+  }
+
+  .hero {
+    padding-top: 116px;
+  }
+}
+
 @media (max-width: 480px) {
   .hero-photo {
     width: 110px;
