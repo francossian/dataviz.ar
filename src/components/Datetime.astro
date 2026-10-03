@@ -2,7 +2,7 @@
 import IconCalendar from "@/assets/icons/IconCalendar.svg";
 import config from "@/config";
 import { useTranslations } from "@/i18n";
-import { langFromUrl } from "@/blogs";
+import { langFromUrl, type Lang } from "@/blogs";
 
 type Props = {
   class?: string;
@@ -10,6 +10,8 @@ type Props = {
   pubDatetime: string | Date;
   timezone?: string;
   modDatetime?: string | Date | null;
+  /** Language for the month name; defaults to the page's language */
+  lang?: Lang;
 };
 
 const {
@@ -18,9 +20,9 @@ const {
   size = "sm",
   class: className = "",
   timezone: postTimezone,
+  lang = langFromUrl(Astro.url),
 } = Astro.props;
 
-const lang = langFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const isModified = modDatetime && modDatetime > pubDatetime;

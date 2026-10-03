@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 import { blogUrl, langFromUrl } from "@/blogs";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath } from "@/utils/withBase";
+import { isBilingualPage, LANG_STORAGE_KEY } from "@/utils/bilingual";
 import config from "@/config";
 import "@/styles/global.css";
 
@@ -28,12 +29,15 @@ const socialImageURL = new URL(ogImage, Astro.site ?? Astro.url);
 const lang = langFromUrl(Astro.url);
 // RSS autodiscovery: the current blog's feed (Datos y relatos elsewhere)
 const rssHref = blogUrl(lang, "rss.xml");
+// General pages carry both languages; the head script picks one
+const bilingual = isBilingualPage(Astro.url);
 ---
 
 <!doctype html>
 <html
   dir={site.dir ?? "ltr"}
   lang={lang}
+  data-bilingual={bilingual ? "true" : undefined}
   class="overflow-y-scroll scroll-smooth"
 >
   <head>
@@ -119,6 +123,81 @@ const rssHref = blogUrl(lang, "rss.xml");
         // Expose value so theme.ts can skip re-detection.
         window.__theme = { value: theme };
       })();
+    </script>
+
+    {
+      /*
+      Language: same idea as the theme script above — runs synchronously in
+      <head>, so <html lang> is final before the first paint and the CSS in
+      global.css shows only that language (no flash of the other one).
+      Only general pages (data-bilingual) switch; blog pages keep their
+      blog's language. See src/utils/bilingual.ts.
+    */
+    }
+    <script is:inline define:vars={{ KEY: LANG_STORAGE_KEY }}>
+      // The visitor's explicit choice wins; otherwise their browser's
+      // main language: anything starting with "es" → Spanish, else English.
+      function preferredLang() {
+        let stored = null;
+        try {
+          stored = localStorage.getItem(KEY);
+        } catch (e) {}
+        if (stored === "es" || stored === "en") return stored;
+        const nav =
+          (navigator.languages && navigator.languages[0]) ||
+          navigator.language ||
+          "";
+        return nav.toLowerCase().startsWith("es") ? "es" : "en";
+      }
+
+      const isBilingual = doc =>
+        doc.documentElement.dataset.bilingual === "true";
+
+      // Attributes can't be rendered twice: apply the one for this language
+      function applyAttrs(lang) {
+        document.querySelectorAll("[data-i18n-attrs]").forEach(el => {
+          try {
+            const attrs = JSON.parse(el.getAttribute("data-i18n-attrs"));
+            for (const name in attrs) el.setAttribute(name, attrs[name][lang]);
+          } catch (e) {}
+        });
+        document.querySelectorAll("[data-lang-btn]").forEach(btn => {
+          btn.setAttribute(
+            "aria-pressed",
+            String(btn.dataset.langBtn === lang)
+          );
+        });
+      }
+
+      if (isBilingual(document)) {
+        document.documentElement.lang = preferredLang();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        if (isBilingual(document)) applyAttrs(document.documentElement.lang);
+      });
+
+      // AstroPaper swaps pages client-side (view transitions): set the
+      // language on the incoming page before it's shown, then its attributes.
+      document.addEventListener("astro:before-swap", event => {
+        if (isBilingual(event.newDocument)) {
+          event.newDocument.documentElement.lang = preferredLang();
+        }
+      });
+      document.addEventListener("astro:after-swap", () => {
+        if (isBilingual(document)) applyAttrs(document.documentElement.lang);
+      });
+
+      // Called by LanguageToggle: remember the choice and, on a general
+      // page, switch right away.
+      window.__setSiteLang = lang => {
+        try {
+          localStorage.setItem(KEY, lang);
+        } catch (e) {}
+        if (isBilingual(document)) {
+          document.documentElement.lang = lang;
+          applyAttrs(lang);
+        }
+      };
     </script>
 
     <ClientRouter />

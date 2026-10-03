@@ -1,0 +1,88 @@
+---
+/**
+ * ES / EN switch in the header. It behaves differently depending on where
+ * it is:
+ *  - General page (home, portfolio, bio): two buttons. Clicking switches
+ *    the page's language instantly and remembers the choice.
+ *  - Inside a blog: the page has a fixed language, so the current one is
+ *    plain text and the other is a LINK — to this post's translation if it
+ *    has one, otherwise to the other blog. Following it also remembers the
+ *    choice, so the general pages match afterwards.
+ */
+import { BLOGS, blogUrl, langFromUrl, otherLang, type Lang } from "@/blogs";
+import { useTranslations } from "@/i18n";
+import { i18nAttrs, isBilingualPage } from "@/utils/bilingual";
+
+type Props = {
+  /** Inside a blog: where the other language lives (e.g. a translation) */
+  altLangUrl?: string;
+};
+
+const { altLangUrl } = Astro.props;
+const bilingual = isBilingualPage(Astro.url);
+const lang = langFromUrl(Astro.url);
+const t = useTranslations(lang);
+const langs: Lang[] = ["es", "en"];
+const option =
+  "lang-option rounded-full px-2 py-0.5 text-xs font-medium tracking-wide";
+---
+
+<div
+  role="group"
+  class="border-border flex items-center rounded-full border p-0.5"
+  aria-label={t.a11y.language}
+  data-i18n-attrs={bilingual
+    ? i18nAttrs({ "aria-label": t => t.a11y.language })
+    : undefined}
+>
+  {
+    langs.map(l =>
+      bilingual ? (
+        // Pressed state is styled from <html lang> (global.css), so it is
+        // right before any script runs; aria-pressed is synced by Layout.
+        <button
+          type="button"
+          class={option}
+          lang={l}
+          data-lang-btn={l}
+          aria-pressed="false"
+        >
+          {l.toUpperCase()}
+        </button>
+      ) : l === lang ? (
+        <span class={option} lang={l} data-lang-current aria-current="true">
+          {l.toUpperCase()}
+        </span>
+      ) : (
+        <a
+          class={option}
+          href={altLangUrl ?? blogUrl(otherLang(lang))}
+          lang={l}
+          hreflang={l}
+          data-lang-link={l}
+          title={BLOGS[l].title}
+        >
+          {l.toUpperCase()}
+        </a>
+      )
+    )
+  }
+</div>
+
+<script>
+  // Event delegation on document: survives AstroPaper's client-side page
+  // swaps (view transitions) without re-binding.
+  document.addEventListener("click", event => {
+    const target = event.target as HTMLElement | null;
+    const button = target?.closest<HTMLElement>("[data-lang-btn]");
+    if (button?.dataset.langBtn) {
+      window.__setSiteLang?.(button.dataset.langBtn);
+      return;
+    }
+    // Following the link to the other blog: remember that language too
+    const link = target?.closest<HTMLElement>("[data-lang-link]");
+    if (link?.dataset.langLink) {
+      window.__setSiteLang?.(link.dataset.langLink);
+    }
+  });
+</script>

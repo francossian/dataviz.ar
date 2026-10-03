@@ -43,6 +43,25 @@
   @apply decoration-decor underline decoration-2 underline-offset-8;
 }
 
+/* Bilingual general pages (see src/utils/bilingual.ts): hide the language
+   that doesn't match <html lang>. !important beats display utilities
+   (block, inline-flex…) set on the same elements. */
+html[lang="es"] [data-lang-only="en"],
+html[lang="en"] [data-lang-only="es"] {
+  display: none !important;
+}
+
+/* ES/EN switch: the active option. On general pages it follows <html lang>
+   (correct before any script runs); inside a blog it's the current one. */
+.lang-option {
+  @apply text-muted-foreground hover:text-foreground;
+}
+html[lang="es"] [data-lang-btn="es"],
+html[lang="en"] [data-lang-btn="en"],
+[data-lang-current] {
+  @apply bg-muted text-foreground;
+}
+
 :target {
   scroll-margin-block: 1rem;
 }

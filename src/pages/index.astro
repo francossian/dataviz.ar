@@ -1,4 +1,14 @@
 ---
+/**
+ * Home: a short intro, the latest posts and a pointer to the portfolio.
+ * Deliberately no hero or calls to action — the site shows work, it
+ * doesn't sell.
+ *
+ * Bilingual: both languages are in the HTML and the visitor's language
+ * (stored choice, else browser) decides which one shows — see
+ * src/utils/bilingual.ts. Spanish visitors see the latest from Datos y
+ * relatos, English visitors from Data Stories.
+ */
 import { getRelativeLocaleUrl } from "astro:i18n";
 import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
@@ -7,24 +17,23 @@ import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import Card from "@/components/Card.astro";
 import LinkButton from "@/components/LinkButton.astro";
+import UIText from "@/components/UIText.astro";
 import { getBlogPosts } from "@/utils/getBlogPosts";
-import { BLOGS, DEFAULT_LANG, blogUrl } from "@/blogs";
+import { BLOG_LIST, blogUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
-const { posts: postsConfig } = config;
+const homePath = getRelativeLocaleUrl(config.site.lang, "");
 
-const locale = config.site.lang;
-const t = useTranslations(DEFAULT_LANG);
-
-// Latest posts from the blog in the page's language. Built in Spanish for
-// now; the ES/EN toggle (next step) will switch to Data Stories for
-// English visitors.
-const blog = BLOGS[DEFAULT_LANG];
-const sortedPosts = await getBlogPosts(blog.lang);
-const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
-const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
-const homePath = getRelativeLocaleUrl(locale, "");
+// The latest posts of each blog, rendered side by side in the HTML; CSS
+// shows only the visitor's language.
+const blogs = await Promise.all(
+  BLOG_LIST.map(async blog => ({
+    blog,
+    t: useTranslations(blog.lang),
+    posts: (await getBlogPosts(blog.lang)).slice(0, config.posts.perIndex),
+  }))
+);
 ---
 
 <Layout>
@@ -36,86 +45,76 @@ const homePath = getRelativeLocaleUrl(locale, "");
     class="app-layout my-1"
   >
     <section id="hero" class="border-border border-b pt-8 pb-6">
-      <!-- Intro: who I am and what this is. Deliberately no buttons or
-           calls to action — the site shows work, it doesn't sell. -->
       <h1 class="my-4 inline-block text-3xl font-semibold sm:my-6 sm:text-4xl">
-        Hola, soy Franco.
+        <UIText es="Hola, soy Franco." en="Hi, I'm Franco." />
       </h1>
-      <a
-        target="_blank"
-        href={blogUrl(blog.lang, "rss.xml")}
-        class="ms-2 inline-block"
-        aria-label="RSS Feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
 
       <p class="text-lg leading-relaxed sm:text-xl">
-        Trabajo con datos: diseño encuestas, armo dashboards y hago
-        visualizaciones. Acá publico lo que voy haciendo y lo que aprendo en el
-        camino.
+        <UIText
+          es="Trabajo con datos: diseño encuestas, armo dashboards y hago visualizaciones. Acá publico lo que voy haciendo y lo que aprendo en el camino."
+          en="I work with data: I design surveys, build dashboards and make visualizations. Here I publish what I'm working on and what I learn along the way."
+        />
       </p>
     </section>
 
     {
-      featuredPosts.length > 0 && (
+      blogs.map(({ blog, t, posts }) => (
         <section
-          id="featured"
-          class:list={[
-            "pt-12 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
-          ]}
+          id={`recent-posts-${blog.lang}`}
+          lang={blog.lang}
+          data-lang-only={blog.lang}
+          class="pt-12 pb-6"
         >
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.featured}
-          </h2>
-          <ul>
-            {featuredPosts.map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
-
-    {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
+          <h2 class="flex items-center gap-3 text-2xl font-semibold tracking-wide">
             {t.home.recentPosts}
+            <a
+              href={blogUrl(blog.lang, "rss.xml")}
+              class="inline-block"
+              title={`RSS — ${blog.title}`}
+            >
+              <IconRss
+                width={20}
+                height={20}
+                class="stroke-accent scale-110 stroke-3 rtl:-rotate-90"
+              />
+              <span class="sr-only">{`RSS — ${blog.title}`}</span>
+            </a>
           </h2>
-          <ul>
-            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
+
+          {posts.length > 0 ? (
+            <ul>
+              {posts.map(data => (
+                <Card variant="h3" {...data} />
+              ))}
+            </ul>
+          ) : (
+            <p class="text-muted-foreground mt-4">{t.blog.empty}</p>
+          )}
+
+          <div class="my-8 text-center">
+            <LinkButton href={blogUrl(blog.lang)}>
+              {blog.title}
+              <IconArrowRight class="inline-block rtl:-rotate-180" />
+            </LinkButton>
+          </div>
         </section>
-      )
+      ))
     }
 
-    {
-      sortedPosts.length === 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
-          </h2>
-          <p class="text-muted-foreground mt-4">{t.blog.empty}</p>
-        </section>
-      )
-    }
-
-    <div class="my-8 text-center">
-      <LinkButton href={blogUrl(blog.lang)}>
-        {blog.title}
-        <IconArrowRight class="inline-block rtl:-rotate-180" />
-      </LinkButton>
-    </div>
+    <section id="portfolio" class="border-border border-t pt-10 pb-6">
+      <p>
+        <UIText
+          es="Simulaciones, exploradores e infografías interactivas:"
+          en="Simulations, explorers and interactive infographics:"
+        />{" "}
+        <a
+          href="/portfolio/"
+          class="text-accent decoration-decor hover:text-highlight hover:decoration-highlight font-medium underline decoration-2 underline-offset-3"
+        >
+          <UIText es="ver portfolio" en="see portfolio" /> →
+        </a>
+      </p>
+    </section>
   </main>
   <Footer />
 </Layout>

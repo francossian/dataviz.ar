@@ -3,6 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import { getPostUrl } from "@/utils/getPostPaths";
 import { toTransitionName } from "@/utils/toTransitionName";
 import Datetime from "./Datetime.astro";
+import { langFromPostId } from "@/blogs";
 
 type Props = {
   variant?: "h2" | "h3";
@@ -26,6 +27,6 @@ const { title, description, ...props } = data;
       {title}
     </Heading>
   </a>
-  <Datetime {...props} />
+  <Datetime {...props} lang={langFromPostId(id)} />
   <p>{description}</p>
 </li>

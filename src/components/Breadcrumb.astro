@@ -8,6 +8,7 @@
 import { stripBase } from "@/utils/withBase";
 import { blogFromPath, langFromUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
+import UIText from "./UIText.astro";
 
 const t = useTranslations(langFromUrl(Astro.url));
 
@@ -58,7 +59,7 @@ for (const [index, segment] of segments.entries()) {
     class="flex flex-wrap items-center gap-x-1 font-light [&>li:not(:last-child)>a]:hover:opacity-100"
   >
     <li class="flex items-center gap-x-1">
-      <a href="/" class="opacity-80">{t.nav.home}</a>
+      <a href="/" class="opacity-80"><UIText get={t => t.nav.home} /></a>
       <span aria-hidden="true" class="opacity-80">&raquo;</span>
     </li>
     {

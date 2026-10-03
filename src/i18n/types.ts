@@ -69,6 +69,8 @@ export interface UIStrings {
     noResults: string;
     goToPreviousPage: string;
     goToNextPage: string;
+    /** Accessible name of the ES/EN switch */
+    language: string;
   };
   notFound: {
     title: string;

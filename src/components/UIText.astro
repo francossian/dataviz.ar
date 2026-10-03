@@ -1,0 +1,38 @@
+---
+/**
+ * A piece of UI text that follows the page's language rules:
+ *  - inside a blog → just that blog's language;
+ *  - on a general page → both languages, one hidden by CSS according to
+ *    <html lang> (see src/utils/bilingual.ts).
+ *
+ * Text from the dictionaries:   <UIText get={t => t.nav.about} />
+ * Page-specific text:           <UIText es="Hola" en="Hi" />
+ */
+import { langFromUrl } from "@/blogs";
+import { useTranslations } from "@/i18n";
+import type { PickString } from "@/utils/bilingual";
+import { isBilingualPage } from "@/utils/bilingual";
+
+type Props = { get: PickString } | { es: string; en: string };
+
+const props = Astro.props;
+const text = (lang: "es" | "en") =>
+  "get" in props ? props.get(useTranslations(lang)) : props[lang];
+
+const bilingual = isBilingualPage(Astro.url);
+---
+
+{
+  bilingual ? (
+    <Fragment>
+      <span lang="es" data-lang-only="es">
+        {text("es")}
+      </span>
+      <span lang="en" data-lang-only="en">
+        {text("en")}
+      </span>
+    </Fragment>
+  ) : (
+    text(langFromUrl(Astro.url))
+  )
+}
