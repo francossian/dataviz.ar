@@ -39,6 +39,12 @@
 
 /* Current page in the nav: a straight celeste underline (AstroPaper's
    default is wavy) */
+/* Small, quiet uppercase label above a section (Portfolio, Bio): the
+   page title carries the weight. Overrides the base h2 heading font. */
+@utility section-label {
+  @apply font-app text-muted-foreground mt-14 mb-6 text-sm font-bold tracking-widest uppercase;
+}
+
 @utility active-nav {
   @apply decoration-decor underline decoration-2 underline-offset-8;
 }

@@ -1,36 +1,136 @@
 ---
-import { getEntry, render } from "astro:content";
+/**
+ * Bio: photo, what I do, experience and contact. Bilingual general page —
+ * texts come from src/data/bio.ts and follow the ES/EN switch.
+ */
+import { Image } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
-import Breadcrumb from "@/components/Breadcrumb.astro";
-import Main from "@/components/Main.astro";
 import Footer from "@/components/Footer.astro";
+import UIText from "@/components/UIText.astro";
+import photo from "@/assets/images/franco.webp";
+import { bio } from "@/data/bio";
+import { BLOGS, blogUrl } from "@/blogs";
 import config from "@/config";
 
-const about = await getEntry("pages", "about");
+// Display names for the social profiles in astro-paper.config.ts
+const socialLabels: Record<string, string> = {
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  bluesky: "Bluesky",
+  x: "X",
+  upwork: "Upwork",
+  mail: "Email",
+};
 
-if (!about) {
-  throw new Error(
-    "Missing content entry: `about.md` or `about.mdx` in `src/content/pages/`"
-  );
-}
-
-const { Content } = await render(about);
+const link =
+  "text-accent decoration-decor hover:text-highlight hover:decoration-highlight underline decoration-2 underline-offset-3";
 ---
 
 <Layout
-  title={`${about.data.title} | ${config.site.title}`}
-  description={about.data.description}
-  ogImage={about.data.ogImage}
-  canonicalURL={about.data.canonicalURL}
+  title={`Bio | ${config.site.title}`}
+  description="Franco Guiragossian — análisis de datos, encuestas y visualización."
 >
   <Header />
+  <main id="main-content" class="app-layout pb-12">
+    <div class="mt-10 flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+      {/* 1024px source → Astro serves ~144/288px WebP for 1x/2x screens */}
+      <Image
+        src={photo}
+        alt="Franco Guiragossian"
+        widths={[144, 288]}
+        sizes="144px"
+        loading="eager"
+        class="border-muted size-36 shrink-0 rounded-full border-4 object-cover"
+      />
+      <div class="text-center sm:text-start">
+        <h1 class="text-3xl font-semibold sm:text-4xl">Franco Guiragossian</h1>
+        <p class="text-muted-foreground mt-2 text-lg">
+          <UIText es={bio.tagline.es} en={bio.tagline.en} />
+        </p>
+      </div>
+    </div>
 
-  <Breadcrumb />
+    <h2 class="section-label">
+      <UIText es="Qué hago" en="What I do" />
+    </h2>
+    <div class="space-y-4 text-lg leading-relaxed">
+      {
+        bio.about.map(p => (
+          <p>
+            <UIText es={p.es} en={p.en} />
+          </p>
+        ))
+      }
+    </div>
 
-  <Main pageTitle={about.data.title} class="app-prose">
-    <Content />
-  </Main>
+    {
+      bio.experience.length > 0 && (
+        <>
+          <h2 class="section-label">
+            <UIText es="Experiencia" en="Experience" />
+          </h2>
+          <ul>
+            {bio.experience.map(item => (
+              <li class="border-border grid gap-1 border-b py-4 sm:grid-cols-[8rem_1fr] sm:gap-6">
+                <span class="text-muted-foreground text-sm tabular-nums sm:pt-0.5">
+                  {item.from} — {item.to ?? <UIText es="hoy" en="present" />}
+                </span>
+                <div>
+                  <p class="font-semibold">
+                    <UIText es={item.role.es} en={item.role.en} />
+                  </p>
+                  <p class="text-muted-foreground">{item.organization}</p>
+                  {item.description && (
+                    <p class="mt-1">
+                      <UIText
+                        es={item.description.es}
+                        en={item.description.en}
+                      />
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
 
+    <h2 class="section-label">
+      <UIText es="En este sitio" en="On this site" />
+    </h2>
+    {
+      /* Sentences with links inside can't go through UIText (plain
+        strings), so each language is its own paragraph */
+    }
+    <p class="text-lg leading-relaxed" lang="es" data-lang-only="es">
+      Mis proyectos están en el <a href="/portfolio/" class={link}>portfolio</a
+      >. Escribo en <a href={blogUrl("es")} class={link}>{BLOGS.es.title}</a> y, en
+      inglés, en <a href={blogUrl("en")} lang="en" class={link}
+        >{BLOGS.en.title}</a
+      >.
+    </p>
+    <p class="text-lg leading-relaxed" lang="en" data-lang-only="en">
+      My projects are in the <a href="/portfolio/" class={link}>portfolio</a>. I
+      write at <a href={blogUrl("en")} class={link}>{BLOGS.en.title}</a> and, in Spanish,
+      at <a href={blogUrl("es")} lang="es" class={link}>{BLOGS.es.title}</a>.
+    </p>
+
+    <h2 class="section-label">
+      <UIText es="Contacto" en="Contact" />
+    </h2>
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-lg">
+      {
+        config.socials.map(({ name, url }) => (
+          <li>
+            <a href={url} target="_blank" rel="noopener" class={link}>
+              {socialLabels[name] ?? name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
   <Footer />
 </Layout>

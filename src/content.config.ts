@@ -31,16 +31,6 @@ const posts = defineCollection({
     }),
 });
 
-const pages = defineCollection({
-  loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: "./src/content/pages" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string().optional(),
-    ogImage: z.string().optional(),
-    canonicalURL: z.string().optional(),
-  }),
-});
-
 /**
  * Portfolio — interactive projects that live on their own subdomains.
  * One Markdown file per project, frontmatter only.
@@ -100,4 +90,4 @@ const visualizations = defineCollection({
     }),
 });
 
-export const collections = { posts, pages, portfolio, visualizations };
+export const collections = { posts, portfolio, visualizations };

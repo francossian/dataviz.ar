@@ -19,7 +19,9 @@ const props = Astro.props;
 const text = (lang: "es" | "en") =>
   "get" in props ? props.get(useTranslations(lang)) : props[lang];
 
-const bilingual = isBilingualPage(Astro.url);
+// Two copies only when the page is bilingual AND the texts differ —
+// identical words ("Bio", "Portfolio") are written once.
+const bilingual = isBilingualPage(Astro.url) && text("es") !== text("en");
 ---
 
 {

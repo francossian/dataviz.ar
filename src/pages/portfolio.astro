@@ -16,10 +16,6 @@ import config from "@/config";
 const projects = (await getCollection("portfolio")).sort(
   (a, b) => a.data.order - b.data.order
 );
-
-// Small, quiet section labels (the page title carries the weight)
-const sectionLabel =
-  "font-app text-muted-foreground mt-14 mb-6 text-sm font-bold tracking-widest uppercase";
 ---
 
 <Layout
@@ -36,14 +32,14 @@ const sectionLabel =
       />
     </p>
 
-    <h2 class={sectionLabel}>
+    <h2 class="section-label">
       <UIText es="Proyectos interactivos" en="Interactive projects" />
     </h2>
     <div class="grid gap-x-8 gap-y-14 sm:grid-cols-2">
       {projects.map(project => <ProjectItem {project} />)}
     </div>
 
-    <h2 class={sectionLabel}>
+    <h2 class="section-label">
       <UIText es="Visualizaciones" en="Visualizations" />
     </h2>
     <VizGallery />
