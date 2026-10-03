@@ -1,0 +1,25 @@
+---
+/**
+ * Row of round social icon links, rendered from src/data/socials.ts.
+ * Purely static — no script, no hydration.
+ */
+import { socials } from "../data/socials";
+---
+
+<div class="hero-socials">
+  {
+    socials.map(({ label, href, icon }) => (
+      <a
+        href={href}
+        class="social-icon"
+        aria-label={label}
+        target="_blank"
+        rel="noopener"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d={icon} />
+        </svg>
+      </a>
+    ))
+  }
+</div>

@@ -72,6 +72,20 @@ a:hover {
   color: var(--accent-dark);
 }
 
+/* Visually hidden but still read by screen readers and crawlers
+   (e.g. the real <h1> text behind the typewriter animation) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ═══════════════════════════════════════════
    NAV BAR
 ════════════════════════════════════════════ */
@@ -174,7 +188,8 @@ a:hover {
   background: var(--bg);
 }
 
-#particle-canvas {
+/* Class, not id: the canvas is now a reusable component (ParticleNetwork.astro) */
+.particle-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -254,6 +269,11 @@ a:hover {
   opacity: 0;
   transition: opacity 0.8s ease;
   margin-top: -0.25rem;
+}
+/* Added by ProfileCard's script when the role animation starts
+   (replaces the old inline style.opacity = "1") */
+.hero-tagline.is-visible {
+  opacity: 1;
 }
 
 /* ── CTA buttons ── */
