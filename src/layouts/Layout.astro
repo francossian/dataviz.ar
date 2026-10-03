@@ -1,7 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
-import { getRelativeLocaleUrl } from "astro:i18n";
+import { blogUrl, langFromUrl } from "@/blogs";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath } from "@/utils/withBase";
 import config from "@/config";
@@ -24,16 +24,16 @@ const {
 } = Astro.props;
 
 const socialImageURL = new URL(ogImage, Astro.site ?? Astro.url);
-const rssHref = getRelativeLocaleUrl(
-  Astro.currentLocale ?? config.site.lang,
-  "rss.xml"
-);
+// Pages inside a blog are in its language; the rest use the default (es)
+const lang = langFromUrl(Astro.url);
+// RSS autodiscovery: the current blog's feed (Datos y relatos elsewhere)
+const rssHref = blogUrl(lang, "rss.xml");
 ---
 
 <!doctype html>
 <html
   dir={site.dir ?? "ltr"}
-  lang={Astro.currentLocale ?? site.lang}
+  lang={lang}
   class="overflow-y-scroll scroll-smooth"
 >
   <head>

@@ -1,20 +1,15 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
-import { stripBase, stripLocale } from "@/utils/withBase";
+/**
+ * Breadcrumb trail built from the URL, aware of the two blogs:
+ *   /datos-y-relatos/tags/encuestas/2/
+ *   → Inicio » Datos y relatos » Etiquetas » encuestas (página 2)
+ * Labels come from the page's language (Spanish or English blog).
+ */
+import { stripBase } from "@/utils/withBase";
+import { blogFromPath, langFromUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
-import config from "@/config";
 
-const locale = Astro.currentLocale ?? config.site.lang;
-const t = useTranslations(locale);
-
-// Strip base prefix and trailing slash, then locale prefix so segments
-// reflect the logical page path only.
-const pathWithoutBase = stripBase(Astro.url.pathname).replace(/\/+$/, "");
-const currentUrlPath = stripLocale(pathWithoutBase, locale);
-
-// Get url array from path
-// eg: /tags/tailwindcss => ['tags', 'tailwindcss']
-const breadcrumbList = currentUrlPath.split("/").slice(1).filter(Boolean);
+const t = useTranslations(langFromUrl(Astro.url));
 
 const decodeSegment = (value: string) => {
   try {
@@ -24,36 +19,37 @@ const decodeSegment = (value: string) => {
   }
 };
 
-const navLabels: Record<string, string> = {
-  posts: t.nav.posts,
+type Crumb = { label: string; href: string };
+
+const path = stripBase(Astro.url.pathname);
+const segments = path.split("/").filter(Boolean);
+const blog = blogFromPath(path);
+
+const sectionLabels: Record<string, string> = {
   tags: t.nav.tags,
-  about: t.nav.about,
   archives: t.nav.archives,
   search: t.nav.search,
 };
 
-// if breadcrumb is Home > Posts > [page] <etc>
-// replace Posts with localized "Posts (page number)"
-if (breadcrumbList[0] === "posts") {
-  breadcrumbList.splice(
-    0,
-    2,
-    `${t.nav.posts} (${t.pagination.page.toLowerCase()} ${breadcrumbList[1] || 1})`
-  );
-}
-
-// if breadcrumb is Home > Tags > [tag] > [page] <etc>
-// replace [tag] > [page] with localized [tag] (page number)
-if (breadcrumbList[0] === "tags" && !isNaN(Number(breadcrumbList[2]))) {
-  breadcrumbList.splice(
-    1,
-    3,
-    `${decodeSegment(breadcrumbList[1])} ${
-      Number(breadcrumbList[2]) === 1
-        ? ""
-        : `(${t.pagination.page.toLowerCase()} ${breadcrumbList[2]})`
-    }`
-  );
+// Walk the path, accumulating each crumb's own URL. A trailing page number
+// (pagination) isn't a crumb: it's appended to the previous label instead.
+const crumbs: Crumb[] = [];
+let href = "/";
+for (const [index, segment] of segments.entries()) {
+  href += `${segment}/`;
+  const isPageNumber = /^\d+$/.test(segment) && index === segments.length - 1;
+  if (isPageNumber && crumbs.length > 0) {
+    if (segment !== "1") {
+      crumbs[crumbs.length - 1].label +=
+        ` (${t.pagination.page.toLowerCase()} ${segment})`;
+    }
+    continue;
+  }
+  const label =
+    index === 0 && blog
+      ? blog.title // the blog's proper name, not its URL slug
+      : (sectionLabels[segment] ?? decodeSegment(segment));
+  crumbs.push({ label, href });
 }
 ---
 
@@ -62,30 +58,21 @@ if (breadcrumbList[0] === "tags" && !isNaN(Number(breadcrumbList[2]))) {
     class="flex flex-wrap items-center gap-x-1 font-light [&>li:not(:last-child)>a]:hover:opacity-100"
   >
     <li class="flex items-center gap-x-1">
-      <a href={getRelativeLocaleUrl(locale, "")} class="opacity-80">
-        {t.nav.home}
-      </a>
+      <a href="/" class="opacity-80">{t.nav.home}</a>
       <span aria-hidden="true" class="opacity-80">&raquo;</span>
     </li>
     {
-      breadcrumbList.map((breadcrumb, index) =>
-        index + 1 === breadcrumbList.length ? (
+      crumbs.map(({ label, href }, index) =>
+        index + 1 === crumbs.length ? (
           <li>
-            <span
-              class:list={["capitalize opacity-75", { lowercase: index > 0 }]}
-              aria-current="page"
-            >
-              {/* make the last part lowercase in Home > Tags > some-tag */}
-              {navLabels[breadcrumb] ?? decodeSegment(breadcrumb)}
+            <span class="opacity-75" aria-current="page">
+              {label}
             </span>
           </li>
         ) : (
           <li class="flex items-center gap-x-1">
-            <a
-              href={getRelativeLocaleUrl(locale, breadcrumb)}
-              class="capitalize opacity-70"
-            >
-              {navLabels[breadcrumb] ?? decodeSegment(breadcrumb)}
+            <a href={href} class="opacity-70">
+              {label}
             </a>
             <span aria-hidden="true" class="opacity-70">
               &raquo;

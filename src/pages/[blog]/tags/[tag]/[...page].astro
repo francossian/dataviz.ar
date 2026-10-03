@@ -1,5 +1,4 @@
 ---
-import { getCollection } from "astro:content";
 import type { GetStaticPathsOptions } from "astro";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
@@ -11,30 +10,34 @@ import Pagination from "@/components/Pagination.astro";
 import { getUniqueTags } from "@/utils/getUniqueTags";
 import { getSortedPosts } from "@/utils/getSortedPosts";
 import { slugifyAll } from "@/utils/slugify";
+import { getBlogPosts } from "@/utils/getBlogPosts";
+import { BLOG_LIST } from "@/blogs";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-  const posts = await getCollection("posts", ({ data }) => !data.draft);
-  const tags = getUniqueTags(posts);
-
-  return tags.flatMap(({ tag, tagName }) => {
-    const tagPosts = getSortedPosts(
-      posts.filter(({ data }) => slugifyAll(data.tags).includes(tag))
-    );
-
-    return paginate(tagPosts, {
-      params: { tag },
-      props: { tagName },
-      pageSize: config.posts.perPage,
-    });
-  });
+  const perBlog = await Promise.all(
+    BLOG_LIST.map(async blog => {
+      const posts = await getBlogPosts(blog.lang);
+      return getUniqueTags(posts).flatMap(({ tag, tagName }) =>
+        paginate(
+          getSortedPosts(
+            posts.filter(({ data }) => slugifyAll(data.tags).includes(tag))
+          ),
+          {
+            params: { blog: blog.slug, tag },
+            props: { tagName, blog },
+            pageSize: config.posts.perPage,
+          }
+        )
+      );
+    })
+  );
+  return perBlog.flat();
 }
 
-const { page, tagName } = Astro.props;
-
-const locale = Astro.currentLocale ?? config.site.lang;
-const t = useTranslations(locale);
+const { page, tagName, blog } = Astro.props;
+const t = useTranslations(blog.lang);
 ---
 
 <Layout title={`${t.pages.tagTitle}: ${tagName} | ${config.site.title}`}>

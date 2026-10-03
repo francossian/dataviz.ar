@@ -31,6 +31,15 @@ export interface UIStrings {
     recentPosts: string;
     allPosts: string;
   };
+  /** Added for dataviz.ar's two blogs */
+  blog: {
+    /** Shown on a blog index with no posts yet */
+    empty: string;
+    /** Label before the link to the other-language blog */
+    otherBlog: string;
+    /** Link on a post to its translation (in the OTHER language) */
+    readTranslation: string;
+  };
   footer: {
     copyright: string;
     allRightsReserved: string;

@@ -21,6 +21,10 @@ import config from "./astro-paper.config";
 
 export default defineConfig({
   site: config.site.url,
+  // Built as a meta-refresh page (static hosting has no server redirects)
+  redirects: {
+    "/about": "/franco-guiragossian/",
+  },
   integrations: [
     mdx(),
     sitemap({

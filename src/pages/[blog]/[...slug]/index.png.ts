@@ -5,6 +5,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
 import { getPostSlug } from "@/utils/getPostPaths";
+import { BLOGS, langFromPostId } from "@/blogs";
 import config from "@/config";
 
 export async function getStaticPaths() {
@@ -17,7 +18,10 @@ export async function getStaticPaths() {
   );
 
   return posts.map(post => ({
-    params: { slug: getPostSlug(post.id, post.filePath) },
+    params: {
+      blog: BLOGS[langFromPostId(post.id)].slug,
+      slug: getPostSlug(post.id, post.filePath),
+    },
     props: post,
   }));
 }

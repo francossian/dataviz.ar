@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import IconEdit from "@/assets/icons/IconEdit.svg";
+import { langFromUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
@@ -16,7 +17,7 @@ const editPost = config.features.editPost;
 const href = editPost.enabled ? `${editPost.url}${post.filePath}` : "";
 const showEditPost = editPost.enabled && !hideEditPost && href.trim() !== "";
 
-const t = useTranslations(Astro.currentLocale);
+const t = useTranslations(langFromUrl(Astro.url));
 ---
 
 {

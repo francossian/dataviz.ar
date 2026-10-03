@@ -5,7 +5,7 @@ export default {
     home: "Home",
     posts: "Posts",
     tags: "Tags",
-    about: "About",
+    about: "Bio",
     archives: "Archives",
     search: "Search",
   },
@@ -32,6 +32,11 @@ export default {
     featured: "Featured",
     recentPosts: "Recent Posts",
     allPosts: "All Posts",
+  },
+  blog: {
+    empty: "No posts yet — coming soon.",
+    otherBlog: "En español:",
+    readTranslation: "Leer en español",
   },
   footer: {
     copyright: "Copyright",

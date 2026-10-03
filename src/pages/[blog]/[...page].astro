@@ -1,0 +1,102 @@
+---
+/**
+ * Index of ONE blog (paginated): /datos-y-relatos/, /data-stories/,
+ * /data-stories/2/, …
+ *
+ * `[blog]` is a dynamic segment, but getStaticPaths only emits the slugs
+ * in src/blogs.ts — so exactly two blogs are built, each listing only the
+ * posts from its own language folder.
+ */
+import type { GetStaticPaths } from "astro";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Card from "@/components/Card.astro";
+import Footer from "@/components/Footer.astro";
+import Pagination from "@/components/Pagination.astro";
+import { getBlogPosts } from "@/utils/getBlogPosts";
+import { BLOGS, BLOG_LIST, blogUrl, otherLang } from "@/blogs";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const perBlog = await Promise.all(
+    BLOG_LIST.map(async blog =>
+      paginate(await getBlogPosts(blog.lang), {
+        params: { blog: blog.slug },
+        props: { blog },
+        pageSize: config.posts.perPage,
+      })
+    )
+  );
+  return perBlog.flat();
+}) satisfies GetStaticPaths;
+
+const { page, blog } = Astro.props;
+const t = useTranslations(blog.lang);
+const other = BLOGS[otherLang(blog.lang)];
+---
+
+<Layout
+  title={`${blog.title} | ${config.site.title}`}
+  description={blog.description}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle={blog.title} pageDesc={blog.description}>
+    <!-- Blog-level links. The other blog is a separate publication, so it's
+         offered as a link, not mixed into this list. -->
+    <p class="text-muted-foreground -mt-3 mb-6 flex flex-wrap gap-x-2 text-sm">
+      <a
+        href={blogUrl(blog.lang, "tags/")}
+        class="hover:text-accent underline-offset-4 hover:underline"
+      >
+        {t.nav.tags}
+      </a>
+      <span aria-hidden="true">·</span>
+      <a
+        href={blogUrl(blog.lang, "archives/")}
+        class="hover:text-accent underline-offset-4 hover:underline"
+      >
+        {t.nav.archives}
+      </a>
+      <span aria-hidden="true">·</span>
+      <a
+        href={blogUrl(blog.lang, "rss.xml")}
+        class="hover:text-accent underline-offset-4 hover:underline"
+      >
+        RSS
+      </a>
+      <span aria-hidden="true">·</span>
+      <span>
+        {t.blog.otherBlog}{" "}
+        <a
+          href={blogUrl(other.lang)}
+          lang={other.lang}
+          class="text-accent decoration-decor underline decoration-2 underline-offset-3"
+        >
+          {other.title}
+        </a>
+      </span>
+    </p>
+
+    {
+      page.data.length > 0 ? (
+        <ul>
+          {page.data.map(data => (
+            <Card {...data} />
+          ))}
+        </ul>
+      ) : (
+        <p class="text-muted-foreground my-12">{t.blog.empty}</p>
+      )
+    }
+  </Main>
+
+  <Pagination {page} />
+
+  <Footer noMarginTop={page.lastPage > 1} />
+</Layout>

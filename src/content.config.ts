@@ -3,6 +3,8 @@ import { z } from "astro/zod";
 import { glob } from "astro/loaders";
 import config from "@/config";
 
+// Posts live in a language sub-folder: posts/es/ (Datos y relatos) or
+// posts/en/ (Data Stories). See src/blogs.ts.
 export const BLOG_PATH = "src/content/posts";
 
 const posts = defineCollection({
@@ -21,6 +23,11 @@ const posts = defineCollection({
       canonicalURL: z.string().optional(),
       hideEditPost: z.boolean().optional(),
       timezone: z.string().optional(),
+      // The same post in the other blog, by its id: the path under
+      // src/content/posts/ without extension, e.g. "en/how-i-built-it".
+      // Adds a "Read in English" / "Leer en español" link; an id that
+      // doesn't exist fails the build.
+      translation: z.string().optional(),
     }),
 });
 

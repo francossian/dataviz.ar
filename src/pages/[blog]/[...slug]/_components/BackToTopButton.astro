@@ -1,9 +1,10 @@
 ---
 import IconArrowLeft from "@/assets/icons/IconArrowLeft.svg";
 import IconArrowNarrowUp from "@/assets/icons/IconArrowNarrowUp.svg";
+import { langFromUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
 
-const t = useTranslations(Astro.currentLocale);
+const t = useTranslations(langFromUrl(Astro.url));
 ---
 
 <div
