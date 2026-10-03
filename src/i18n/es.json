@@ -11,5 +11,22 @@
     "Diseño de encuestas"
   ],
   "profile.cta_portfolio": "Ver portfolio",
-  "profile.cta_home": "Inicio"
+  "profile.cta_home": "Inicio",
+  "home.tagline": "Análisis de datos, encuestas y visualización: de la pregunta al gráfico.",
+  "home.cta_projects": "Ver proyectos",
+  "home.cta_about": "Sobre mí",
+  "home.projects_title": "Proyectos",
+  "home.services_title": "Qué hago",
+  "services.analysis.title": "Análisis de datos",
+  "services.analysis.text": "Limpieza, modelado y análisis estadístico en R y Python para responder preguntas concretas.",
+  "services.surveys.title": "Diseño de encuestas",
+  "services.surveys.text": "Cuestionarios, muestreo y procesamiento para investigación de mercado y social.",
+  "services.dashboards.title": "Dashboards",
+  "services.dashboards.text": "Dashboards en Power BI para seguir indicadores sin depender de reportes manuales.",
+  "services.dataviz.title": "Visualización de datos",
+  "services.dataviz.text": "Gráficos interactivos e infografías con D3.js que cuentan lo que dicen los datos.",
+  "home.services_more": "Más sobre mí",
+  "projects.open": "Ver proyecto",
+  "projects.new_tab": "(se abre en una pestaña nueva)",
+  "projects.tools": "Herramientas"
 }

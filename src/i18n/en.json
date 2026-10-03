@@ -11,5 +11,22 @@
     "Survey design"
   ],
   "profile.cta_portfolio": "View portfolio",
-  "profile.cta_home": "Home"
+  "profile.cta_home": "Home",
+  "home.tagline": "Data analysis, surveys and visualization: from the question to the chart.",
+  "home.cta_projects": "See projects",
+  "home.cta_about": "About me",
+  "home.projects_title": "Projects",
+  "home.services_title": "What I do",
+  "services.analysis.title": "Data analysis",
+  "services.analysis.text": "Cleaning, modeling and statistical analysis in R and Python to answer concrete questions.",
+  "services.surveys.title": "Survey design",
+  "services.surveys.text": "Questionnaires, sampling and processing for market and social research.",
+  "services.dashboards.title": "Dashboards",
+  "services.dashboards.text": "Power BI dashboards to track indicators without depending on manual reports.",
+  "services.dataviz.title": "Data visualization",
+  "services.dataviz.text": "Interactive charts and infographics with D3.js that tell what the data says.",
+  "home.services_more": "More about me",
+  "projects.open": "View project",
+  "projects.new_tab": "(opens in a new tab)",
+  "projects.tools": "Tools"
 }

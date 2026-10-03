@@ -1,17 +1,75 @@
 ---
 /**
- * TEMPORARY placeholder — exists only so step 1 (scaffold) produces a
- * buildable site that exercises MainLayout. Replaced by the real home page
- * in step 3.
+ * Home — a single page of anchor-linked sections:
+ *   hero (compact) → #proyectos (portfolio grid, the main content) → #que-hago
+ * The blog preview section joins in step 4 once the blog collection exists.
  */
+import { getCollection } from "astro:content";
 import MainLayout from "../layouts/MainLayout.astro";
+import ParticleNetwork from "../components/ParticleNetwork.astro";
+import LogoMark from "../components/LogoMark.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { t, type I18nKey } from "../i18n";
+
+const projects = (await getCollection("portfolio")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const services = ["analysis", "surveys", "dashboards", "dataviz"] as const;
+// Builds e.g. "services.analysis.title" — typed, so a typo fails the build.
+const serviceKey = (id: (typeof services)[number], part: "title" | "text") =>
+  `services.${id}.${part}` as I18nKey;
 ---
 
 <MainLayout>
-  <section class="hero">
-    <div class="hero-card coming-soon-card">
-      <p class="coming-soon-label">Coming soon</p>
-      <p class="coming-soon-sub">Astro migration in progress.</p>
+  <section class="hero home-hero">
+    <ParticleNetwork />
+    <div class="home-hero-content">
+      <LogoMark size={88} />
+      <h1 class="home-hero-name">Franco Guiragossian</h1>
+      <p class="home-hero-tagline" data-i18n="home.tagline">{t("home.tagline")}</p>
+      <div class="hero-ctas">
+        <a href="#proyectos" class="btn btn-primary" data-i18n="home.cta_projects"
+          >{t("home.cta_projects")}</a
+        >
+        <a href="/franco-guiragossian" class="btn btn-secondary" data-i18n="home.cta_about"
+          >{t("home.cta_about")}</a
+        >
+      </div>
     </div>
+  </section>
+
+  <section id="proyectos" class="section" aria-labelledby="proyectos-title">
+    <h2 id="proyectos-title" class="section-title" data-i18n="home.projects_title">
+      {t("home.projects_title")}
+    </h2>
+    <div class="project-grid">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section id="que-hago" class="section" aria-labelledby="que-hago-title">
+    <h2 id="que-hago-title" class="section-title" data-i18n="home.services_title">
+      {t("home.services_title")}
+    </h2>
+    <ul class="service-grid">
+      {
+        services.map((id) => (
+          <li class="card service-card">
+            <h3 class="service-title" data-i18n={serviceKey(id, "title")}>
+              {t(serviceKey(id, "title"))}
+            </h3>
+            <p class="service-text" data-i18n={serviceKey(id, "text")}>
+              {t(serviceKey(id, "text"))}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="section-more">
+      <a href="/franco-guiragossian"
+        ><span data-i18n="home.services_more">{t("home.services_more")}</span> →</a
+      >
+    </p>
   </section>
 </MainLayout>

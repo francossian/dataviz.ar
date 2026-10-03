@@ -1,0 +1,75 @@
+---
+/**
+ * ProjectCard — one portfolio project, linking OUT to its own subdomain.
+ *
+ * Content is bilingual inline: both titles and both descriptions are always
+ * shown (each tagged with its `lang` so screen readers pronounce it right).
+ * Only the small "View project" label is site chrome, so only it follows
+ * the ES/EN toggle (data-i18n).
+ *
+ * Whole-card click target without wrapping everything in <a>: the title
+ * link gets a ::after that stretches over the card (.project-link in CSS).
+ * Screen readers then announce just the title as the link, not the whole card.
+ */
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { t } from "../i18n";
+
+interface Props {
+  project: CollectionEntry<"portfolio">;
+}
+const { project } = Astro.props;
+const { title_es, title_en, description_es, description_en, url, image, tools } =
+  project.data;
+
+// A proper name (e.g. "Look at the Stars") is the same in both languages —
+// don't print it twice.
+const sameTitle = title_es === title_en;
+const host = new URL(url).host;
+
+// Thumbnail notes (kept here, not as an HTML comment, so they don't ship):
+// - alt="" because it's decorative — the title right below names the
+//   project, and screen readers would otherwise read it twice.
+// - Astro generates a WebP srcset (400/800/1200w) at build time; `sizes`
+//   tells the browser how wide the card renders at each breakpoint, so it
+//   downloads the smallest file that's still sharp.
+---
+
+<article class="card project-card">
+  <Image
+    src={image}
+    alt=""
+    widths={[400, 800, 1200]}
+    sizes="(min-width: 1100px) 340px, (min-width: 720px) 45vw, 92vw"
+    class="project-thumb"
+    loading="lazy"
+  />
+
+  <div class="project-body">
+    <h3 class="project-title">
+      <a href={url} class="project-link" target="_blank" rel="noopener" lang="es">
+        {title_es}
+        <span class="sr-only" data-i18n="projects.new_tab">{t("projects.new_tab")}</span>
+      </a>
+    </h3>
+    {!sameTitle && <p class="project-title-alt" lang="en">{title_en}</p>}
+
+    <p class="project-desc" lang="es">{description_es}</p>
+    <p class="project-desc project-desc-alt" lang="en">{description_en}</p>
+
+    {
+      tools.length > 0 && (
+        <ul class="tag-list" aria-label={t("projects.tools")} data-i18n-aria-label="projects.tools">
+          {tools.map((tool) => (
+            <li class="tag">{tool}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    <p class="project-cta" aria-hidden="true">
+      <span data-i18n="projects.open">{t("projects.open")}</span>
+      <span class="project-host">{host} ↗</span>
+    </p>
+  </div>
+</article>
