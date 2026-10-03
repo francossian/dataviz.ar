@@ -41,4 +41,63 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { posts, pages };
+/**
+ * Portfolio — interactive projects that live on their own subdomains.
+ * One Markdown file per project, frontmatter only.
+ *
+ * Bilingual INLINE: both languages are stored and both are always shown
+ * on the portfolio page (they don't follow the ES/EN switch).
+ */
+const portfolio = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/portfolio" }),
+  // `image()` resolves the path relative to the .md file and feeds it to
+  // Astro's image pipeline (resized WebP + srcset at build time).
+  schema: ({ image }) =>
+    z.object({
+      title_es: z.string(),
+      title_en: z.string(),
+      // Short: both are shown, one under the other
+      description_es: z.string().max(240),
+      description_en: z.string().max(240),
+      url: z.url(),
+      image: image(),
+      tools: z.array(z.string()).default([]),
+      year: z.number().int().optional(),
+      // Lower = earlier on the page
+      order: z.number().int().default(100),
+      // Optional "how I made it" post, by its id (e.g. "es/simulador").
+      // A wrong id fails the build.
+      post: z.string().optional(),
+    }),
+});
+
+/**
+ * Visualizations — static chart images, shown as a thumbnail grid on the
+ * portfolio page; clicking one opens it full size with its note.
+ * One Markdown file per chart (frontmatter only), image next to it.
+ */
+const visualizations = defineCollection({
+  loader: glob({
+    pattern: "**/[^_]*.md",
+    base: "./src/content/visualizations",
+  }),
+  schema: ({ image }) =>
+    z.object({
+      title_es: z.string(),
+      title_en: z.string(),
+      image: image(),
+      // What the chart shows, for people who can't see it
+      alt_es: z.string(),
+      alt_en: z.string(),
+      date: z.coerce.date(),
+      tags: z.array(z.string()).default([]),
+      tools: z.array(z.string()).default([]),
+      // Author's note, ~2 sentences — shown in the enlarged view
+      note_es: z.string().max(400),
+      note_en: z.string().max(400),
+      // Data source, e.g. "INDEC" → "Fuente: INDEC" / "Source: INDEC"
+      source: z.string().optional(),
+    }),
+});
+
+export const collections = { posts, pages, portfolio, visualizations };

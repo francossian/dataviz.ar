@@ -1,0 +1,118 @@
+---
+/**
+ * One interactive project on the portfolio page, linking OUT to its own
+ * subdomain. Editorial layout: a large screenshot, no card chrome.
+ *
+ * Bilingual inline: both titles and descriptions are always shown, each
+ * tagged with its `lang` so screen readers pronounce it correctly.
+ */
+import { Image } from "astro:assets";
+import { getEntry, type CollectionEntry } from "astro:content";
+import UIText from "./UIText.astro";
+import { getPostUrl } from "@/utils/getPostPaths";
+import { langFromPostId } from "@/blogs";
+
+type Props = { project: CollectionEntry<"portfolio"> };
+
+const { project } = Astro.props;
+const {
+  title_es,
+  title_en,
+  description_es,
+  description_en,
+  url,
+  image,
+  tools,
+  year,
+  post,
+} = project.data;
+
+// A proper name ("Look at the Stars") is the same in both languages
+const sameTitle = title_es === title_en;
+const host = new URL(url).host;
+
+// Optional "how I made it" post. Resolved at build time, so a typo in the
+// id fails the build instead of shipping a dead link.
+let writeup: { url: string; lang: "es" | "en" } | null = null;
+if (post) {
+  const entry = await getEntry("posts", post);
+  if (!entry) {
+    throw new Error(
+      `Portfolio "${project.id}": post "${post}" does not exist (use its id, e.g. "es/my-post").`
+    );
+  }
+  writeup = {
+    url: getPostUrl(entry.id, entry.filePath),
+    lang: langFromPostId(entry.id),
+  };
+}
+
+const meta = [...tools, ...(year ? [String(year)] : [])].join(" · ");
+const link =
+  "decoration-decor hover:text-highlight hover:decoration-highlight underline decoration-2 underline-offset-3";
+---
+
+<article class="group">
+  {
+    /* The screenshot repeats the title link, so it's hidden from screen
+      readers and skipped by keyboard — the title is the real link. */
+  }
+  <a
+    href={url}
+    target="_blank"
+    rel="noopener"
+    tabindex="-1"
+    aria-hidden="true"
+    class="border-border block overflow-hidden rounded-lg border"
+  >
+    <Image
+      src={image}
+      alt=""
+      widths={[400, 800, 1200]}
+      sizes="(min-width: 768px) 370px, 92vw"
+      loading="lazy"
+      class="aspect-16/10 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
+    />
+  </a>
+
+  <h3 class="mt-4 text-xl leading-snug font-semibold">
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener"
+      lang="es"
+      class="hover:text-highlight transition-colors"
+    >
+      {title_es}
+      <span class="sr-only">
+        <UIText es="(se abre en una pestaña nueva)" en="(opens in a new tab)" />
+      </span>
+    </a>
+  </h3>
+  {
+    !sameTitle && (
+      <p lang="en" class="text-muted-foreground text-sm">
+        {title_en}
+      </p>
+    )
+  }
+
+  <p lang="es" class="mt-2">{description_es}</p>
+  <p lang="en" class="text-muted-foreground mt-1">{description_en}</p>
+
+  <p class="text-muted-foreground mt-3 text-sm">
+    {meta}
+    {
+      writeup && (
+        <>
+          {" · "}
+          <a href={writeup.url} lang={writeup.lang} class={link}>
+            {writeup.lang === "es" ? "Cómo lo hice" : "How I made it"}
+          </a>
+        </>
+      )
+    }
+    {" · "}
+    <a href={url} target="_blank" rel="noopener" class={link}>{host} ↗</a>
+  </p>
+</article>

@@ -1,0 +1,183 @@
+---
+/**
+ * Visualizations gallery: a grid of chart thumbnails; clicking one opens
+ * it full size with its author's note.
+ *
+ * The enlarged view is a native <dialog> opened with showModal(): the
+ * browser provides the backdrop, closes it with Esc and keeps keyboard
+ * focus inside — so the script below only opens it and handles clicks on
+ * the backdrop. Without JavaScript, a thumbnail is a plain link to the
+ * full-size image.
+ *
+ * Text follows the ES/EN switch (unlike project cards, which show both):
+ * captions are short and the notes would double the length.
+ */
+import { Image, getImage } from "astro:assets";
+import { getCollection } from "astro:content";
+import UIText from "./UIText.astro";
+
+const items = (await getCollection("visualizations")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+// "sept 2026" / "Sep 2026" — month and year are enough for a chart
+const monthYear = (date: Date, lang: "es" | "en") => {
+  const parts = new Intl.DateTimeFormat(lang === "es" ? "es-AR" : "en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).formatToParts(date);
+  const get = (type: string) =>
+    parts.find(p => p.type === type)?.value.replace(/\.$/, "") ?? "";
+  return `${get("month")} ${get("year")}`;
+};
+
+const gallery = await Promise.all(
+  items.map(async item => ({
+    ...item.data,
+    dialogId: `viz-${item.id.replace(/[^a-z0-9-]/gi, "-")}`,
+    // Full-size (but capped) version for the dialog and the no-JS link
+    full: await getImage({ src: item.data.image, width: 1600 }),
+    meta: (lang: "es" | "en") =>
+      [monthYear(item.data.date, lang), ...item.data.tools].join(" · "),
+    // The image's alt text switches with the language like visible text
+    altAttrs: JSON.stringify({
+      alt: { es: item.data.alt_es, en: item.data.alt_en },
+    }),
+  }))
+);
+---
+
+{
+  gallery.length === 0 ? (
+    <p class="text-muted-foreground">
+      <UIText
+        es="Pronto: gráficos estáticos, cada uno con una nota sobre cómo lo hice."
+        en="Coming soon: static charts, each with a note on how I made it."
+      />
+    </p>
+  ) : (
+    <ul class="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
+      {gallery.map(v => (
+        <li>
+          <a
+            href={v.full.src}
+            class="group block"
+            data-viz-open={v.dialogId}
+            aria-haspopup="dialog"
+          >
+            {/* Charts keep their own #EEEEEE background (CLAUDE.md) */}
+            <div class="bg-chart-bg aspect-4/3 overflow-hidden rounded-lg">
+              <Image
+                src={v.image}
+                alt={v.alt_es}
+                data-i18n-attrs={v.altAttrs}
+                widths={[300, 600]}
+                sizes="(min-width: 768px) 240px, 45vw"
+                loading="lazy"
+                class="size-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+              />
+            </div>
+            <p class="group-hover:text-highlight mt-2 text-sm leading-snug font-medium transition-colors">
+              <UIText es={v.title_es} en={v.title_en} />
+            </p>
+            <p class="text-muted-foreground text-xs">
+              <UIText es={v.meta("es")} en={v.meta("en")} />
+            </p>
+          </a>
+
+          <dialog
+            id={v.dialogId}
+            class="bg-background text-foreground m-auto max-h-[92dvh] w-[min(64rem,94vw)] overflow-auto rounded-xl p-0 shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+            aria-labelledby={`${v.dialogId}-title`}
+          >
+            <figure class="m-0">
+              <div class="bg-chart-bg p-3 sm:p-5">
+                <img
+                  src={v.full.src}
+                  {...v.full.attributes}
+                  alt={v.alt_es}
+                  data-i18n-attrs={v.altAttrs}
+                  loading="lazy"
+                  class="mx-auto h-auto max-h-[68dvh] w-auto max-w-full"
+                />
+              </div>
+              <figcaption class="px-5 pt-4 pb-5 sm:px-6">
+                <h3 id={`${v.dialogId}-title`} class="text-xl font-semibold">
+                  <UIText es={v.title_es} en={v.title_en} />
+                </h3>
+                <p class="mt-2">
+                  <UIText es={v.note_es} en={v.note_en} />
+                </p>
+                <p class="text-muted-foreground mt-3 text-sm">
+                  <UIText es={v.meta("es")} en={v.meta("en")} />
+                  {v.source && (
+                    <>
+                      {" · "}
+                      <UIText
+                        es={`Fuente: ${v.source}`}
+                        en={`Source: ${v.source}`}
+                      />
+                    </>
+                  )}
+                </p>
+              </figcaption>
+            </figure>
+            {/* method="dialog": the browser closes the dialog on submit */}
+            <form method="dialog" class="absolute end-2 top-2">
+              <button
+                class="bg-background/90 hover:text-highlight rounded-full px-2.5 py-1 text-lg leading-none shadow"
+                aria-label="Cerrar"
+                data-i18n-attrs={JSON.stringify({
+                  "aria-label": { es: "Cerrar", en: "Close" },
+                })}
+              >
+                ✕
+              </button>
+            </form>
+          </dialog>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<script>
+  // Delegated on document so it keeps working across AstroPaper's
+  // client-side page swaps.
+  //
+  // Capture phase (`true`): Astro's ClientRouter also listens for link
+  // clicks and would start navigating to the image URL. Running first and
+  // calling preventDefault() makes the router leave the click alone.
+  document.addEventListener(
+    "click",
+    event => {
+      const target = event.target as HTMLElement;
+
+      // Thumbnail → open its dialog (instead of following the image link)
+      const opener = target.closest<HTMLElement>("[data-viz-open]");
+      if (opener) {
+        const dialog = document.getElementById(opener.dataset.vizOpen ?? "");
+        if (dialog instanceof HTMLDialogElement) {
+          event.preventDefault();
+          dialog.showModal();
+        }
+        return;
+      }
+
+      // A click that lands on the <dialog> itself (not its content) is a
+      // click on the dark backdrop → close
+      if (target instanceof HTMLDialogElement && target.open) {
+        target.close();
+      }
+    },
+    true
+  );
+
+  // Don't carry an open dialog into the next page
+  document.addEventListener("astro:before-swap", () => {
+    document
+      .querySelectorAll<HTMLDialogElement>("dialog[open]")
+      .forEach(d => d.close());
+  });
+</script>
