@@ -38,31 +38,48 @@ Personal website for **Franco Guiragossian**, a data analyst specialized in data
 ## Design System
 
 ### Typography
-- **Primary font:** Under consideration — **Jost** (modern, geometric, warm personality, Futura-inspired) or **DM Sans** (clean, neutral). Final decision TBD.
+- **Headings / wordmark:** **Jost** (geometric, warm, Futura-inspired).
+- **Body:** **DM Sans**.
 - Use clear typographic hierarchy: distinct sizes/weights for headings, body, captions.
 
-### Color Palette
+### Color Palette — "celeste y tierra"
 
-#### Website UI
-| Token            | Hex       | Usage                                      |
-|------------------|-----------|---------------------------------------------|
-| `dark-base`      | `#222831` | Primary dark background, nav, footer        |
-| `dark-gray`      | `#393E46` | Cards/surfaces on dark backgrounds          |
-| `light-gray`     | `#EEEEEE` | Light mode backgrounds, chart backgrounds   |
-| `off-white`      | `#F7F7F7` | Page background (light mode)                |
-| `teal`           | `#00ADB5` | Primary accent — links, buttons, highlights |
-| `teal-dark`      | `#00838A` | Hover/active states                         |
-| `teal-light`     | `#B2DFDB` | Subtle teal backgrounds, tags               |
+Approved October 2026. A blend of an earthy palette (navy, cream, sand) with the Argentine-flag sky blue from the previous design, bridged by a strong terracotta accent. **Light mode is the default**; dark mode is opt-in.
+
+Contrast ratios are against the light page background `#FBFAF7` (WCAG minimum for text: 4.5).
+
+#### Light mode (default)
+| Token        | Hex       | Contrast | Usage                                                        |
+|--------------|-----------|----------|--------------------------------------------------------------|
+| `bg`         | `#FBFAF7` | —        | Page background (warm off-white)                             |
+| `text`       | `#1B2430` | 15.0     | Body text                                                    |
+| `muted`      | `#56656F` | 5.8      | Secondary text: dates, captions, metadata                    |
+| `navy`       | `#1B4965` | 9.2      | Headings, wordmark, links (links get a sky-blue underline)   |
+| `crema`      | `#EFE1C8` | —        | Surfaces: quote blocks, text highlights, callouts — never the whole page |
+| `celeste`    | `#75AADB` | 2.4      | **Decorative only** — underlines, selection, chart series. Never as text. |
+| `arena`      | `#CE9A73` | 2.4      | **Decorative only** — chart series, illustrations            |
+| `terracota`  | `#B5452A` | 5.2      | The one strong accent: what must stand out (key data point, tags, eyebrow labels). Use sparingly. |
+| `border`     | `#E4E1D9` | —        | Hairlines and dividers                                       |
+
+#### Dark mode
+| Token        | Hex                         | Usage                         |
+|--------------|-----------------------------|-------------------------------|
+| `bg`         | `#10283A`                   | Page background (deep navy)   |
+| `text`       | `#F3EEE4`                   | Body text and headings (13.1) |
+| `muted`      | `#A9B4BB`                   | Secondary text (7.2)          |
+| `link`       | `#75AADB`                   | Links (6.2)                   |
+| `terracota`  | `#E08A6D`                   | Strong accent, lightened to read on dark (5.8) |
+| `surface`    | `rgba(239, 225, 200, 0.08)` | Crema at low opacity for blocks |
 
 #### Data Visualization Palette (for chart series)
-| Order | Hex       | Name   |
-|-------|-----------|--------|
-| 1     | `#00ADB5` | Teal   |
-| 2     | `#FF6B6B` | Coral  |
-| 3     | `#FFD93D` | Gold   |
-| 4     | `#6C5CE7` | Purple |
-| 5     | `#A8E6CF` | Mint   |
+| Order | Hex       | Name      | Role                                         |
+|-------|-----------|-----------|----------------------------------------------|
+| 1     | `#1B4965` | Navy      | Default series / context                     |
+| 2     | `#75AADB` | Celeste   | Second series                                |
+| 3     | `#CE9A73` | Arena     | Third series                                 |
+| 4     | `#B5452A` | Terracota | **Highlight** — reserve for the data point or series the chart is about |
 
+- Prefer "context in navy, story in terracota": most marks navy, the one that matters in terracota.
 - All charts and visualizations must use `#EEEEEE` as their background color, regardless of the page theme.
 - Never introduce new colors without asking Franco first.
 
