@@ -1,75 +1,118 @@
 ---
-/**
- * Home — a single page of anchor-linked sections:
- *   hero (compact) → #proyectos (portfolio grid, the main content) → #que-hago
- * The blog preview section joins in step 4 once the blog collection exists.
- */
 import { getCollection } from "astro:content";
-import MainLayout from "../layouts/MainLayout.astro";
-import ParticleNetwork from "../components/ParticleNetwork.astro";
-import LogoMark from "../components/LogoMark.astro";
-import ProjectCard from "../components/ProjectCard.astro";
-import { t, type I18nKey } from "../i18n";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import IconRss from "@/assets/icons/IconRss.svg";
+import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Card from "@/components/Card.astro";
+import LinkButton from "@/components/LinkButton.astro";
+import { getSortedPosts } from "@/utils/getSortedPosts";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
 
-const projects = (await getCollection("portfolio")).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const { posts: postsConfig } = config;
 
-const services = ["analysis", "surveys", "dashboards", "dataviz"] as const;
-// Builds e.g. "services.analysis.title" — typed, so a typo fails the build.
-const serviceKey = (id: (typeof services)[number], part: "title" | "text") =>
-  `services.${id}.${part}` as I18nKey;
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+
+const posts = await getCollection("posts");
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+const homePath = getRelativeLocaleUrl(locale, "");
 ---
 
-<MainLayout>
-  <section class="hero home-hero">
-    <ParticleNetwork />
-    <div class="home-hero-content">
-      <LogoMark size={88} />
-      <h1 class="home-hero-name">Franco Guiragossian</h1>
-      <p class="home-hero-tagline" data-i18n="home.tagline">{t("home.tagline")}</p>
-      <div class="hero-ctas">
-        <a href="#proyectos" class="btn btn-primary" data-i18n="home.cta_projects"
-          >{t("home.cta_projects")}</a
-        >
-        <a href="/franco-guiragossian" class="btn btn-secondary" data-i18n="home.cta_about"
-          >{t("home.cta_about")}</a
-        >
-      </div>
-    </div>
-  </section>
-
-  <section id="proyectos" class="section" aria-labelledby="proyectos-title">
-    <h2 id="proyectos-title" class="section-title" data-i18n="home.projects_title">
-      {t("home.projects_title")}
-    </h2>
-    <div class="project-grid">
-      {projects.map((project) => <ProjectCard project={project} />)}
-    </div>
-  </section>
-
-  <section id="que-hago" class="section" aria-labelledby="que-hago-title">
-    <h2 id="que-hago-title" class="section-title" data-i18n="home.services_title">
-      {t("home.services_title")}
-    </h2>
-    <ul class="service-grid">
-      {
-        services.map((id) => (
-          <li class="card service-card">
-            <h3 class="service-title" data-i18n={serviceKey(id, "title")}>
-              {t(serviceKey(id, "title"))}
-            </h3>
-            <p class="service-text" data-i18n={serviceKey(id, "text")}>
-              {t(serviceKey(id, "text"))}
-            </p>
-          </li>
-        ))
-      }
-    </ul>
-    <p class="section-more">
-      <a href="/franco-guiragossian"
-        ><span data-i18n="home.services_more">{t("home.services_more")}</span> →</a
+<Layout>
+  <Header />
+  <main
+    id="main-content"
+    data-layout="index"
+    data-home-path={homePath}
+    class="app-layout my-1"
+  >
+    <section id="hero" class="border-border border-b pt-8 pb-6">
+      <!-- Intro: who I am and what this is. Deliberately no buttons or
+           calls to action — the site shows work, it doesn't sell. -->
+      <h1 class="my-4 inline-block text-3xl font-semibold sm:my-6 sm:text-4xl">
+        Hola, soy Franco.
+      </h1>
+      <a
+        target="_blank"
+        href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}rss.xml`}
+        class="ms-2 inline-block"
+        aria-label="RSS Feed"
+        title="RSS Feed"
       >
-    </p>
-  </section>
-</MainLayout>
+        <IconRss
+          width={20}
+          height={20}
+          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
+        />
+        <span class="sr-only">RSS Feed</span>
+      </a>
+
+      <p class="text-lg leading-relaxed sm:text-xl">
+        Trabajo con datos: diseño encuestas, armo dashboards y hago
+        visualizaciones. Acá publico lo que voy haciendo y lo que aprendo en el
+        camino.
+      </p>
+    </section>
+
+    {
+      featuredPosts.length > 0 && (
+        <section
+          id="featured"
+          class:list={[
+            "pt-12 pb-6",
+            { "border-border border-b": recentPosts.length > 0 },
+          ]}
+        >
+          <h2 class="text-2xl font-semibold tracking-wide">
+            {t.home.featured}
+          </h2>
+          <ul>
+            {featuredPosts.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      recentPosts.length > 0 && (
+        <section id="recent-posts" class="pt-12 pb-6">
+          <h2 class="text-2xl font-semibold tracking-wide">
+            {t.home.recentPosts}
+          </h2>
+          <ul>
+            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <div class="my-8 text-center">
+      <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
+        {t.home.allPosts}
+        <IconArrowRight class="inline-block rtl:-rotate-180" />
+      </LinkButton>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
+      ?.dataset;
+    const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+    if (indexLayout?.layout) {
+      sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
+    }
+  });
+</script>
