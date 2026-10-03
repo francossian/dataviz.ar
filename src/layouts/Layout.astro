@@ -5,6 +5,7 @@ import { blogUrl, langFromUrl } from "@/blogs";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
 import { getAssetPath } from "@/utils/withBase";
 import { isBilingualPage, LANG_STORAGE_KEY } from "@/utils/bilingual";
+import Analytics from "@/components/Analytics.astro";
 import config from "@/config";
 import "@/styles/global.css";
 
@@ -199,6 +200,9 @@ const bilingual = isBilingualPage(Astro.url);
         }
       };
     </script>
+
+    <!-- Google Analytics via Partytown (only with a real ID, in production) -->
+    <Analytics />
 
     <ClientRouter />
   </head>

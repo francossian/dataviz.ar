@@ -1,0 +1,70 @@
+---
+/**
+ * Google Analytics 4 through Partytown.
+ *
+ * type="text/partytown" makes Partytown run these scripts in a web worker
+ * instead of the main thread, so gtag.js never blocks rendering or input.
+ * Calls made on the main thread to `gtag(...)` are forwarded to the worker
+ * (see `forward` in astro.config.ts).
+ *
+ * Page views are sent manually: AstroPaper swaps pages without a full
+ * reload (view transitions), and gtag's automatic page_view only fires
+ * on the first load. `astro:page-load` fires on the first load AND after
+ * every swap, so each page is counted exactly once.
+ */
+import { GA_MEASUREMENT_ID, analyticsEnabled } from "@/analytics";
+
+// Runs inside the Partytown worker
+const workerSetup = `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag("js", new Date());
+  gtag("config", "${GA_MEASUREMENT_ID}", { send_page_view: false });
+`;
+
+// Runs on the main thread; gtag() calls are relayed to the worker.
+// (Kept as a string: inside the {analyticsEnabled && …} block below, Astro
+// would read the object literal's braces as template expressions.)
+//
+// Timing: right after a view-transition swap, Astro's Partytown integration
+// re-attaches its iframe to the new page and calls made in that window are
+// dropped (measured: lost at 0–100 ms, delivered from ~300 ms on desktop).
+// So the first page view goes out immediately (Partytown queues it until
+// ready) and later ones wait 1.5 s — a wide margin for slow phones. The
+// page's data is captured at navigation time, so a quick next click still
+// records the right page.
+const pageViews = `
+  let firstLoad = true;
+  document.addEventListener("astro:page-load", () => {
+    const params = {
+      page_location: location.href,
+      page_title: document.title,
+      // ES or EN as shown to this visitor. To report on it, register
+      // "site_language" in GA4 as a custom dimension.
+      site_language: document.documentElement.lang,
+    };
+    const send = () => window.gtag?.("event", "page_view", params);
+    if (firstLoad) {
+      firstLoad = false;
+      send();
+    } else {
+      setTimeout(send, 1500);
+    }
+  });
+`;
+---
+
+{
+  analyticsEnabled && (
+    <>
+      <script
+        is:inline
+        type="text/partytown"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+      />
+      <script is:inline type="text/partytown" set:html={workerSetup} />
+      <script is:inline set:html={pageViews} />
+    </>
+  )
+}

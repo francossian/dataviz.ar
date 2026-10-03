@@ -7,6 +7,7 @@ import {
 import tailwindcss from "@tailwindcss/vite";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import partytown from "@astrojs/partytown";
 import { unified } from "@astrojs/markdown-remark";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
@@ -26,6 +27,9 @@ export default defineConfig({
     "/about": "/franco-guiragossian/",
   },
   integrations: [
+    // Runs third-party scripts (Google Analytics) in a web worker.
+    // `forward`: main-thread calls to these are relayed to the worker.
+    partytown({ config: { forward: ["dataLayer.push", "gtag"] } }),
     mdx(),
     sitemap({
       filter: page =>
