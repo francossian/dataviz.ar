@@ -1,0 +1,64 @@
+---
+/**
+ * The frame every chart shares: the #EEEEEE panel, title + subtitle on top,
+ * the plot in the middle (default slot), source + signature at the bottom.
+ *
+ * Title, subtitle and source are real HTML text (selectable, indexable, not
+ * scaled down with the SVG). The plot itself is hidden from screen readers;
+ * instead they get `table`, the same data as an accessible table.
+ */
+import ChartSignature from "./ChartSignature.astro";
+import type { Lang } from "@/blogs";
+
+type Props = {
+  /** Stable slug: seeds the signature's fingerprint */
+  id: string;
+  /** States the conclusion, not the topic ("X triples Y", not "X and Y") */
+  title: string;
+  /** What is measured, units, period */
+  subtitle?: string;
+  /** Data source — always attribute it (CLAUDE.md) */
+  source?: string;
+  lang: Lang;
+  /** Same data, for screen readers */
+  table: { headers: string[]; rows: string[][] };
+};
+
+const { id, title, subtitle, source, lang, table } = Astro.props;
+const sourceLabel = lang === "es" ? "Fuente" : "Source";
+---
+
+{/* not-prose: inside blog posts, keep Tailwind Typography's styles off */}
+<figure class="chart not-prose" lang={lang} aria-labelledby={`${id}-title`}>
+  <figcaption class="chart-header">
+    <span class="chart-title" id={`${id}-title`}>{title}</span>
+    {subtitle && <span class="chart-subtitle">{subtitle}</span>}
+  </figcaption>
+
+  <div class="chart-plot-area" aria-hidden="true">
+    <slot />
+  </div>
+
+  <table class="sr-only">
+    <caption>{title}</caption>
+    <thead>
+      <tr>{table.headers.map(h => <th scope="col">{h}</th>)}</tr>
+    </thead>
+    <tbody>
+      {
+        table.rows.map(row => (
+          <tr>
+            {row.map(cell => (
+              <td>{cell}</td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <div class="chart-footer">
+    <span class="chart-source">{source && `${sourceLabel}: ${source}`}</span>
+    <ChartSignature {id} />
+  </div>
+</figure>

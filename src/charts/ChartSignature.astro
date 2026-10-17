@@ -1,0 +1,41 @@
+---
+/**
+ * The chart signature: a 3×3 dot grid whose lit dots are this chart's
+ * fingerprint (see fingerprint.ts), followed by "dataviz.ar".
+ * Colour comes from CSS (.chart-signature in charts.css).
+ */
+import { fingerprint } from "./fingerprint";
+
+type Props = { id: string };
+const { id } = Astro.props;
+
+const SIZE = 15;
+const step = SIZE / 3;
+const dots = fingerprint(id).map((lit, index) => ({
+  cx: (index % 3) * step + step / 2,
+  cy: Math.floor(index / 3) * step + step / 2,
+  lit,
+}));
+---
+
+<span class="chart-signature">
+  <svg
+    width={SIZE}
+    height={SIZE}
+    viewBox={`0 0 ${SIZE} ${SIZE}`}
+    aria-hidden="true"
+    focusable="false"
+  >
+    {
+      dots.map(({ cx, cy, lit }) => (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={step * 0.32}
+          class:list={["chart-signature-dot", { "is-lit": lit }]}
+        />
+      ))
+    }
+  </svg>
+  dataviz.ar
+</span>

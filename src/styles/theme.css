@@ -1,18 +1,52 @@
 /* ═══════════════════════════════════════════════════════════════
-   Palette "celeste y tierra" — see the Color Palette section of
-   CLAUDE.md for each colour's role and contrast ratio.
+   Colours — single source of truth for the whole site.
 
-   Two layers:
-   1. Theme ROLES (background, accent, heading…) change between light
-      and dark mode. Components should use these.
-   2. Fixed palette colours (navy, celeste, arena…) never change with the
-      theme — for charts, whose background is always #EEEEEE.
+   To change the palette, edit ONLY the "Palette" block below. Every
+   other colour on the site — light/dark roles, charts, and even the
+   social-share images (src/utils/palette.ts reads this file at build
+   time) — refers to these names, so one edit updates everything.
+
+   Layers:
+   1. PALETTE — the raw colours, named for what they ARE.
+   2. Theme ROLES — what a colour DOES in the UI (background, accent…);
+      they change between light and dark mode.
+   3. CHART ROLES — what a colour does in a chart. Fixed: charts keep
+      their own panel in both modes.
+   See the Color Palette section of CLAUDE.md for contrast ratios.
 ═══════════════════════════════════════════════════════════════ */
 
-/* Register the role tokens with Tailwind v4, so classes like
-   bg-background, text-heading or decoration-decor exist.
-   `inline` = Tailwind uses the var() reference itself, so the value
-   follows the active theme at runtime. */
+/* 1. PALETTE — "celeste y tierra". Registered with Tailwind, so each one
+   is also a utility (bg-navy, text-terracota…). */
+@theme {
+  /* Brand */
+  --color-navy: #1b4965;
+  --color-celeste: #75aadb;
+  --color-crema: #efe1c8;
+  --color-arena: #ce9a73;
+  --color-terracota: #b5452a;
+  --color-terracota-light: #e08a6d; /* terracota that reads on dark */
+
+  /* Neutrals — light */
+  --color-paper: #fbfaf7; /* page background */
+  --color-ink: #1b2430; /* body text */
+  --color-slate: #56656f; /* secondary text */
+  --color-line: #e4e1d9; /* hairlines */
+  --color-white: #ffffff;
+
+  /* Neutrals — dark */
+  --color-night: #10283a; /* page background */
+  --color-night-surface: #223745; /* crema at ~8% over night */
+  --color-night-line: #283e4e; /* white at ~10% over night */
+  --color-night-text: #f3eee4;
+  --color-night-slate: #a9b4bb;
+
+  /* Charts */
+  --color-chart-bg: #eeeeee;
+}
+
+/* 2. THEME ROLES, registered with Tailwind so classes like bg-background
+   or text-heading exist. `inline` = the class uses the var() itself, so
+   it follows the active theme at runtime. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -30,41 +64,51 @@
   --font-heading: var(--font-jost);
 }
 
-/* Fixed colours: same in both themes (charts, illustrations) */
-@theme {
-  --color-navy: #1b4965;
-  --color-celeste: #75aadb;
-  --color-crema: #efe1c8;
-  --color-arena: #ce9a73;
-  --color-terracota: #b5452a;
-  --color-chart-bg: #eeeeee;
-}
-
 /* Light mode — the default */
 :root,
 [data-theme="light"] {
-  --background: #fbfaf7; /* warm off-white, "paper" */
-  --foreground: #1b2430; /* body text — 15.0:1 */
-  --accent: #1b4965; /* navy: links, active UI — 9.2:1 */
-  --accent-foreground: #fbfaf7; /* text on an accent-filled surface */
-  --muted: #efe1c8; /* crema: quote blocks, code, highlighted text */
-  --muted-foreground: #56656f; /* dates, captions, metadata — 5.8:1 */
-  --border: #e4e1d9;
-  --heading: #1b4965; /* navy */
-  --highlight: #b5452a; /* terracota: the one strong accent — 5.2:1 */
-  --decor: #75aadb; /* celeste: underlines, selection — never text */
+  --background: var(--color-paper);
+  --foreground: var(--color-ink); /* 15.0:1 */
+  --accent: var(--color-navy); /* links, active UI — 9.2:1 */
+  --accent-foreground: var(--color-paper); /* text on an accent fill */
+  --muted: var(--color-crema); /* quote blocks, code, highlighted text */
+  --muted-foreground: var(--color-slate); /* dates, captions — 5.8:1 */
+  --border: var(--color-line);
+  --heading: var(--color-navy);
+  --highlight: var(--color-terracota); /* the one strong accent — 5.2:1 */
+  --decor: var(--color-celeste); /* underlines, selection — never text */
 }
 
 /* Dark mode — opt-in via the theme button */
 [data-theme="dark"] {
-  --background: #10283a; /* deep navy */
-  --foreground: #f3eee4; /* 13.1:1 */
-  --accent: #75aadb; /* celeste reads well on dark — 6.2:1 */
-  --accent-foreground: #10283a;
-  --muted: #223745; /* crema at ~8% over the background */
-  --muted-foreground: #a9b4bb; /* 7.2:1 */
-  --border: #283e4e; /* white at ~10% over the background */
-  --heading: #f3eee4; /* headings in light text, not celeste */
-  --highlight: #e08a6d; /* terracota lightened to read on dark — 5.8:1 */
-  --decor: #75aadb;
+  --background: var(--color-night);
+  --foreground: var(--color-night-text); /* 13.1:1 */
+  --accent: var(--color-celeste); /* 6.2:1 */
+  --accent-foreground: var(--color-night);
+  --muted: var(--color-night-surface);
+  --muted-foreground: var(--color-night-slate); /* 7.2:1 */
+  --border: var(--color-night-line);
+  --heading: var(--color-night-text);
+  --highlight: var(--color-terracota-light); /* 5.8:1 */
+  --decor: var(--color-celeste);
+}
+
+/* 3. CHART ROLES — used by src/charts (see src/styles/charts.css).
+   Fixed in both modes: a chart is a printed object on its own #EEEEEE
+   panel, so it looks the same everywhere it's shared.
+   "Context in navy, story in terracota" (CLAUDE.md). */
+:root {
+  --chart-bg: var(--color-chart-bg);
+  --chart-ink: var(--color-ink); /* titles' body text, labels */
+  --chart-title: var(--color-navy);
+  --chart-muted: var(--color-slate); /* subtitle, ticks, source */
+  --chart-grid: var(--color-ink); /* drawn at low opacity */
+  --chart-primary: var(--color-navy); /* default marks / context */
+  --chart-highlight: var(--color-terracota); /* the data point that matters */
+  --chart-on-mark: var(--color-white); /* text on top of a bar */
+  /* Multi-series order */
+  --chart-series-1: var(--color-navy);
+  --chart-series-2: var(--color-celeste);
+  --chart-series-3: var(--color-arena);
+  --chart-series-4: var(--color-terracota);
 }

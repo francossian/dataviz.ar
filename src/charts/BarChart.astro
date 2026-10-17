@@ -1,0 +1,359 @@
+---
+/**
+ * BarChart — horizontal bars in the dataviz.ar house style.
+ *
+ *   <BarChart
+ *     id="apuestas-estrategias"           // stable slug: seeds the signature
+ *     title="Ninguna estrategia le gana a la casa"   // the conclusion
+ *     subtitle="Rendimiento apostando $1 por partido, %"
+ *     source="football-data.co.uk"
+ *     data={[{ label: "Al favorito", value: -6.8 }, …]}
+ *     format={{ decimals: 1, suffix: " %" }}
+ *   />
+ *
+ * How it works: D3 only does the maths (scales and ticks); the markup is
+ * plain SVG written here, rendered at BUILD time — the page gets a finished
+ * SVG and no JavaScript. Colours come from CSS classes (charts.css) that
+ * read the chart roles in theme.css: change the palette there, not here.
+ *
+ * Bars grow from zero either way, so negative values work (they extend
+ * left). Inside a bar, the category label sits by the zero line and the
+ * value at the tip; whatever doesn't fit goes just past the tip.
+ *
+ * The plot is drawn twice — wide (640 px) and narrow (360 px) — and CSS
+ * shows the one that fits the space, so text stays legible on phones
+ * instead of shrinking with the whole SVG.
+ */
+import { scaleBand, scaleLinear } from "d3-scale";
+import { extent } from "d3-array";
+import ChartFrame from "./ChartFrame.astro";
+import { makeFormatter, type NumberFormat } from "./format";
+import { textWidth } from "./textWidth";
+import { langFromUrl, type Lang } from "@/blogs";
+
+type Datum = { label: string; value: number };
+
+type Props = {
+  id: string;
+  data: Datum[];
+  title: string;
+  subtitle?: string;
+  source?: string;
+  /** Number format and "Fuente/Source"; defaults to the page's language */
+  lang?: Lang;
+  /** Bars in the highlight colour: by label, the largest, the smallest, or none */
+  highlight?: string[] | "max" | "min" | "none";
+  /** Which bars show their value */
+  values?: "highlight" | "all" | "none";
+  /** Where the value axis goes */
+  axis?: "top" | "bottom";
+  /** Order of the bars ("none" keeps the data order) */
+  sort?: "desc" | "asc" | "none";
+  /** Value-axis limits (default: round numbers around the data, including 0) */
+  domain?: [number, number];
+  /** Approximate number of gridlines */
+  ticks?: number;
+  /** Decimals, prefix ("$"), suffix (" %") for values and ticks */
+  format?: NumberFormat;
+  /** Short notes placed after a bar, by label (keep them to a few words) */
+  annotations?: { label: string; text: string }[];
+  /** Category labels: inside the bar when they fit ("auto"), or forced */
+  labels?: "auto" | "inside" | "outside";
+};
+
+const {
+  id,
+  data,
+  title,
+  subtitle,
+  source,
+  lang = langFromUrl(Astro.url),
+  highlight = "max",
+  values = "highlight",
+  axis = "top",
+  sort = "desc",
+  domain,
+  ticks = 5,
+  format = {},
+  annotations = [],
+  labels = "auto",
+} = Astro.props;
+
+const fmt = makeFormatter(lang, format);
+// Axis labels keep prefix/suffix but only show decimals when a tick needs
+// them ("−12 %", not "−12,0 %")
+const tickFmt = makeFormatter(lang, { ...format, decimals: undefined });
+
+const rows =
+  sort === "none"
+    ? data
+    : [...data].sort((a, b) =>
+        sort === "desc" ? b.value - a.value : a.value - b.value
+      );
+const [minValue = 0, maxValue = 0] = extent(data, d => d.value);
+const isHighlighted = (d: Datum) =>
+  highlight === "max"
+    ? d.value === maxValue
+    : highlight === "min"
+      ? d.value === minValue
+      : highlight !== "none" && highlight.includes(d.label);
+const noteFor = (d: Datum) => annotations.find(a => a.label === d.label)?.text;
+
+// The value axis always includes 0: bars are lengths from zero
+const valueDomain: [number, number] = domain ?? [
+  Math.min(0, minValue),
+  Math.max(0, maxValue),
+];
+
+// ── Layout for one width. Pure geometry: returns what to draw. ──
+type Size = { width: number; row: number; font: number; tickFont: number };
+const PAD = 8; // space between text and bar edges
+const AXIS_SPACE = 24; // room for the tick labels
+
+function layout({ width, row, font, tickFont }: Size) {
+  const top = axis === "top" ? AXIS_SPACE : 6;
+  const plotHeight = rows.length * row;
+  const height = top + plotHeight + (axis === "bottom" ? AXIS_SPACE : 6);
+
+  const y = scaleBand<string>()
+    .domain(rows.map(d => d.label))
+    .range([top, top + plotHeight])
+    .paddingInner(0.3)
+    .paddingOuter(0.1);
+
+  function placeBars(x: ReturnType<typeof scaleLinear<number, number>>) {
+    const zero = x(0);
+    return rows.map(d => {
+      const tip = x(d.value);
+      const dir = d.value < 0 ? -1 : 1; // which way the bar grows
+      const barLength = Math.abs(tip - zero);
+      const hi = isHighlighted(d);
+      const value = fmt(d.value);
+      const showValue = values === "all" || (values === "highlight" && hi);
+      const labelW = textWidth(d.label, font);
+      const valueW = textWidth(value, font, true);
+
+      const labelInside =
+        labels === "inside" ||
+        (labels === "auto" && labelW + 2 * PAD <= barLength);
+      const valueInside =
+        showValue && labelInside && labelW + valueW + 4 * PAD <= barLength;
+      const labelOutside = !labelInside;
+      const valueOutside = showValue && !valueInside;
+
+      // Text past the tip runs away from the bar (right for positive
+      // bars, left for negative ones)
+      const outsideW =
+        (labelOutside ? labelW : 0) +
+        (labelOutside && valueOutside ? PAD : 0) +
+        (valueOutside ? valueW : 0);
+      const outsideX = tip + dir * PAD;
+      const note = noteFor(d);
+      const noteW = note ? textWidth(note, font - 1) : 0;
+      const noteX = outsideX + dir * (outsideW + (outsideW ? PAD * 1.5 : 0));
+      const reach = note ? noteX + dir * noteW : outsideX + dir * outsideW;
+
+      return {
+        label: d.label,
+        value,
+        hi,
+        dir,
+        y: y(d.label) ?? 0,
+        h: y.bandwidth(),
+        barX: Math.min(zero, tip),
+        barLength,
+        zero,
+        tip,
+        labelInside,
+        valueInside,
+        labelOutside,
+        valueOutside,
+        outsideX,
+        note,
+        noteX,
+        // Horizontal extent of everything drawn for this bar
+        left: Math.min(zero, tip, reach),
+        right: Math.max(zero, tip, reach),
+      };
+    });
+  }
+
+  // Axis labels are centred on their gridline, so the outermost ones
+  // stick out half their width past it
+  const tickMarks = (scale: typeof x) =>
+    scale.ticks(ticks).map(t => {
+      const label = tickFmt(t);
+      const half = textWidth(label, tickFont) / 2;
+      return {
+        x: scale(t),
+        label,
+        zero: t === 0,
+        left: scale(t) - half,
+        right: scale(t) + half,
+      };
+    });
+
+  // Text past the tips — and the outer axis labels — need room inside the
+  // panel: narrow the scale's range until everything fits. A few passes,
+  // because shorter bars can push more labels outside.
+  let range: [number, number] = [0, width];
+  let x = scaleLinear().domain(valueDomain).range(range).nice(ticks);
+  let bars = placeBars(x);
+  for (let pass = 0; pass < 6; pass++) {
+    const marks = [...bars, ...tickMarks(x)];
+    const overLeft = Math.max(0, -Math.min(...marks.map(m => m.left)));
+    const overRight = Math.max(0, Math.max(...marks.map(m => m.right)) - width);
+    if (overLeft < 0.5 && overRight < 0.5) break;
+    range = [range[0] + overLeft, range[1] - overRight];
+    x = scaleLinear().domain(valueDomain).range(range).nice(ticks);
+    bars = placeBars(x);
+  }
+
+  return {
+    width,
+    height,
+    font,
+    tickFont,
+    top,
+    bottom: top + plotHeight,
+    tickY: axis === "top" ? top - 9 : top + plotHeight + 16,
+    ticks: tickMarks(x),
+    bars,
+  };
+}
+
+const variants = [
+  { key: "wide", ...layout({ width: 640, row: 36, font: 14, tickFont: 12 }) },
+  { key: "narrow", ...layout({ width: 360, row: 32, font: 13, tickFont: 11 }) },
+];
+
+const table = {
+  headers: [
+    lang === "es" ? "Categoría" : "Category",
+    lang === "es" ? "Valor" : "Value",
+  ],
+  rows: rows.map(d => [d.label, fmt(d.value)]),
+};
+---
+
+<ChartFrame {id} {title} {subtitle} {source} {lang} {table}>
+  {
+    variants.map(v => (
+      <div class={`chart-plot chart-plot--${v.key}`}>
+        <svg
+          viewBox={`0 0 ${v.width} ${v.height}`}
+          width={v.width}
+          height={v.height}
+          focusable="false"
+        >
+          {/* Gridlines + tick labels; the zero line is drawn darker, on top
+              of the bars (below) so it stays visible */}
+          {v.ticks.map(t => (
+            <g>
+              {!t.zero && (
+                <line
+                  x1={t.x}
+                  x2={t.x}
+                  y1={v.top}
+                  y2={v.bottom}
+                  class="chart-gridline"
+                />
+              )}
+              <text
+                x={t.x}
+                y={v.tickY}
+                text-anchor="middle"
+                class="chart-tick"
+                font-size={v.tickFont}
+              >
+                {t.label}
+              </text>
+            </g>
+          ))}
+
+          {v.bars.map(b => (
+            <g class:list={["chart-bar-group", { "is-highlight": b.hi }]}>
+              <rect
+                x={b.barX}
+                y={b.y}
+                width={b.barLength}
+                height={b.h}
+                class="chart-bar"
+              />
+
+              {/* Inside: label by the zero line, value at the tip */}
+              {b.labelInside && (
+                <text
+                  x={b.zero + b.dir * PAD}
+                  y={b.y + b.h / 2}
+                  dominant-baseline="central"
+                  text-anchor={b.dir > 0 ? "start" : "end"}
+                  class="chart-label is-inside"
+                  font-size={v.font}
+                >
+                  {b.label}
+                </text>
+              )}
+              {b.valueInside && (
+                <text
+                  x={b.tip - b.dir * PAD}
+                  y={b.y + b.h / 2}
+                  dominant-baseline="central"
+                  text-anchor={b.dir > 0 ? "end" : "start"}
+                  class="chart-value is-inside"
+                  font-size={v.font}
+                >
+                  {b.value}
+                </text>
+              )}
+
+              {/* Past the tip: whatever didn't fit inside */}
+              {(b.labelOutside || b.valueOutside) && (
+                <text
+                  x={b.outsideX}
+                  y={b.y + b.h / 2}
+                  dominant-baseline="central"
+                  text-anchor={b.dir > 0 ? "start" : "end"}
+                  class="chart-label is-outside"
+                  font-size={v.font}
+                >
+                  {b.labelOutside && <tspan>{b.label}</tspan>}
+                  {b.valueOutside && (
+                    <tspan class="chart-value" dx={b.labelOutside ? PAD : 0}>
+                      {b.value}
+                    </tspan>
+                  )}
+                </text>
+              )}
+              {b.note && (
+                <text
+                  x={b.noteX}
+                  y={b.y + b.h / 2}
+                  dominant-baseline="central"
+                  text-anchor={b.dir > 0 ? "start" : "end"}
+                  class="chart-annotation"
+                  font-size={v.font - 1}
+                >
+                  {b.note}
+                </text>
+              )}
+            </g>
+          ))}
+
+          {/* Zero line last, so bars never cover it */}
+          {v.ticks
+            .filter(t => t.zero)
+            .map(t => (
+              <line
+                x1={t.x}
+                x2={t.x}
+                y1={v.top}
+                y2={v.bottom}
+                class="chart-zero"
+              />
+            ))}
+        </svg>
+      </div>
+    ))
+  }
+</ChartFrame>

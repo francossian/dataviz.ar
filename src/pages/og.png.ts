@@ -3,6 +3,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { fontData, experimental_getFontFileURL } from "astro:assets";
 import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
+import { paletteColor } from "@/utils/palette";
 import config from "@/config";
 
 export const GET: APIRoute = async context => {
@@ -28,7 +29,7 @@ export const GET: APIRoute = async context => {
       type: "div",
       props: {
         style: {
-          background: "#fbfaf7",
+          background: paletteColor("paper"),
           width: "100%",
           height: "100%",
           display: "flex",
@@ -44,8 +45,8 @@ export const GET: APIRoute = async context => {
                 position: "absolute",
                 top: "-1px",
                 right: "-1px",
-                border: "4px solid #1b4965",
-                background: "#efe1c8",
+                border: `4px solid ${paletteColor("navy")}`,
+                background: paletteColor("crema"),
                 opacity: "0.9",
                 borderRadius: "4px",
                 display: "flex",
@@ -60,8 +61,8 @@ export const GET: APIRoute = async context => {
             type: "div",
             props: {
               style: {
-                border: "4px solid #1b4965",
-                background: "#fbfaf7",
+                border: `4px solid ${paletteColor("navy")}`,
+                background: paletteColor("paper"),
                 borderRadius: "4px",
                 display: "flex",
                 justifyContent: "center",
