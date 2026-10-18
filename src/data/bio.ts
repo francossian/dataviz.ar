@@ -29,8 +29,8 @@ export interface Experience {
 
 export const bio = {
   tagline: {
-    es: "Análisis de datos · Encuestas · Visualización",
-    en: "Data analysis · Surveys · Visualization",
+    es: "Análisis y visualización de datos",
+    en: "Data analysis and visualization",
   } satisfies Bilingual,
 
   /** "What I do", one paragraph per item */
