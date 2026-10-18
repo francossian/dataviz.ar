@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import satori from "satori";
+// satori takes plain {type, props} objects (no JSX here); with React's
+// types installed it expects a ReactNode, so the object is cast to one
+import type { ReactNode } from "react";
 import sharp from "sharp";
 import { fontData, experimental_getFontFileURL } from "astro:assets";
 import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
@@ -139,7 +142,7 @@ export const GET: APIRoute = async context => {
           },
         ],
       },
-    },
+    } as unknown as ReactNode,
     {
       width: 1200,
       height: 630,

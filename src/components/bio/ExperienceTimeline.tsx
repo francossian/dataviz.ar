@@ -1,0 +1,317 @@
+/**
+ * ExperienceTimeline — one row per workplace, one bar per role, years at
+ * the bottom. Bars grow left to right when the chart appears; hovering
+ * (or tapping) a bar shows a tooltip with the role.
+ *
+ * The pure half of the pair (see ResponsiveExperienceTimeline): it gets a
+ * width and height and only draws. D3 only does the maths (the time scale
+ * and its ticks); React writes the SVG.
+ *
+ * Colours are the page's theme roles (Tailwind classes such as
+ * fill-accent), not the chart panel colours: this timeline sits directly
+ * on the page, so it has to follow light/dark mode.
+ *
+ * Texts are rendered in BOTH languages; global.css hides the one that
+ * doesn't match <html lang>, so the ES/EN switch works without React
+ * knowing about it.
+ */
+import { useEffect, useState } from "react";
+import { scaleUtc } from "d3-scale";
+import type { Bilingual, Experience } from "@/data/bio";
+import { textWidth } from "@/charts/textWidth";
+
+type Props = {
+  width: number;
+  height: number;
+  rows: Experience[];
+  /** "YYYY-MM-DD": where ongoing roles end (the build date) */
+  today: string;
+};
+
+// ── Vertical layout, in px. A row = label on top, bar underneath. ──
+export const ROW = 46;
+const LABEL_Y = 16; // label baseline, from the top of its row
+const BAR_Y = 24; // top of the bar, from the top of its row
+const BAR = 12; // bar thickness
+export const AXIS = 28; // room for the years under the rows
+const FONT = 13; // labels
+const TICK_FONT = 12; // years
+const PAD = 16; // left/right, so "2015" isn't cut at the edge
+const SPLIT = 2; // gap between two roles at the same place
+const SWEEP = 1500; // ms for the growth to cross the whole width
+const TIP_W = 288; // tooltip width (narrower on small screens)
+
+export const timelineHeight = (rows: number) => rows * ROW + AXIS;
+
+// "2022-06" → 1 Jun 2022, UTC so the date never shifts
+const monthStart = (ym: string) => new Date(`${ym}-01T00:00:00Z`);
+// A role that "ends in April" lasts until May 1st
+const monthEnd = (ym: string) => {
+  const d = monthStart(ym);
+  d.setUTCMonth(d.getUTCMonth() + 1);
+  return d;
+};
+
+// Month names written out (not Intl) so Spanish gets "jun" and not "jun."
+const MONTHS = {
+  es: [
+    "ene",
+    "feb",
+    "mar",
+    "abr",
+    "may",
+    "jun",
+    "jul",
+    "ago",
+    "sept",
+    "oct",
+    "nov",
+    "dic",
+  ],
+  en: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+};
+function period(from: string, to: string | undefined, lang: "es" | "en") {
+  const fmt = (ym: string) => {
+    const [y, m] = ym.split("-");
+    return `${MONTHS[lang][Number(m) - 1]} ${y}`;
+  };
+  const end = to ? fmt(to) : lang === "es" ? "hoy" : "present";
+  return `${fmt(from)} – ${end}`;
+}
+
+/** Both languages; CSS shows the one matching <html lang> */
+function Both({ text }: { text: Bilingual }) {
+  return (
+    <>
+      <span lang="es" data-lang-only="es">
+        {text.es}
+      </span>
+      <span lang="en" data-lang-only="en">
+        {text.en}
+      </span>
+    </>
+  );
+}
+
+type Active = { row: number; role: number };
+
+export default function ExperienceTimeline({
+  width,
+  height,
+  rows,
+  today,
+}: Props) {
+  const plotBottom = rows.length * ROW;
+
+  const x = scaleUtc()
+    .domain([
+      new Date(
+        Math.min(
+          ...rows.flatMap(r =>
+            r.roles.map(role => monthStart(role.from).getTime())
+          )
+        )
+      ),
+      new Date(`${today}T00:00:00Z`),
+    ])
+    .range([PAD, width - PAD]);
+  const [x0, x1] = x.range();
+  // Fewer year labels on a phone: d3 switches to every 2 years by itself
+  const years = x.ticks(width < 480 ? 5 : 10);
+
+  // Every bar, with its position and its place in the growth animation
+  const bars = rows.flatMap((row, r) =>
+    row.roles.map((role, i) => {
+      const start = x(monthStart(role.from));
+      const end = role.to ? x(monthEnd(role.to)) : x1;
+      const last = i === row.roles.length - 1;
+      return {
+        r,
+        i,
+        start,
+        width: Math.max(1, end - start - (last ? 0 : SPLIT)),
+        y: r * ROW + BAR_Y,
+        // One imaginary cursor sweeps the axis at constant speed; each bar
+        // grows while the cursor passes over it. Delay = when the cursor
+        // reaches its start, duration = how long it takes to cross it.
+        // That's what makes parallel jobs read as "at the same time".
+        delay: ((start - x0) / (x1 - x0)) * SWEEP,
+        duration: ((end - start) / (x1 - x0)) * SWEEP,
+      };
+    })
+  );
+
+  // Grow on mount. Two frames: the first paints the bars at width 0, the
+  // second starts the transition from there. With "reduce motion" the bars
+  // are simply drawn full.
+  const [reduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  const [grown, setGrown] = useState(reduced);
+  useEffect(() => {
+    if (reduced) return;
+    let id = requestAnimationFrame(() => {
+      id = requestAnimationFrame(() => setGrown(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [reduced]);
+
+  // Tooltip: hover with a mouse; on touch screens a tap opens it and a tap
+  // anywhere else closes it
+  const [active, setActive] = useState<Active | null>(null);
+  useEffect(() => {
+    if (!active) return;
+    const close = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.("[data-timeline-bar]"))
+        setActive(null);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [active]);
+
+  const activeBar =
+    active && bars.find(b => b.r === active.row && b.i === active.role);
+  const tipW = Math.min(TIP_W, width);
+  const tip = activeBar && {
+    row: rows[activeBar.r],
+    role: rows[activeBar.r].roles[activeBar.i],
+    left: Math.min(
+      Math.max(activeBar.start + activeBar.width / 2 - tipW / 2, 0),
+      width - tipW
+    ),
+    // Under the bar for the top rows, above it for the bottom ones, so it
+    // never hangs off the bottom of the chart
+    top:
+      activeBar.r < rows.length / 2 - 0.5
+        ? activeBar.y + BAR + 8
+        : activeBar.y - 8,
+    above: activeBar.r >= rows.length / 2 - 0.5,
+  };
+
+  return (
+    <div style={{ position: "relative", width, height }}>
+      {/* Hidden from screen readers: the page has the same content as a list */}
+      <svg width={width} height={height} aria-hidden="true" focusable="false">
+        {/* A vertical gridline and its label per year */}
+        {years.map(d => (
+          <g key={d.getTime()}>
+            <line
+              x1={x(d)}
+              x2={x(d)}
+              y1={0}
+              y2={plotBottom}
+              className="stroke-border"
+            />
+            <text
+              x={x(d)}
+              y={plotBottom + 18}
+              textAnchor="middle"
+              fontSize={TICK_FONT}
+              className="fill-muted-foreground tabular-nums"
+            >
+              {d.getUTCFullYear()}
+            </text>
+          </g>
+        ))}
+
+        {/* Workplace name above its first bar; flipped to end at the right
+            edge if it wouldn't fit */}
+        {rows.map((row, r) => {
+          const start = x(monthStart(row.roles[0].from));
+          const fits = start + textWidth(row.organization, FONT) <= width;
+          return (
+            <text
+              key={row.organization}
+              x={fits ? start : width}
+              y={r * ROW + LABEL_Y}
+              textAnchor={fits ? "start" : "end"}
+              fontSize={FONT}
+              className="fill-foreground font-medium"
+            >
+              {row.organization}
+            </text>
+          );
+        })}
+
+        {bars.map(b => (
+          <g
+            key={`${b.r}-${b.i}`}
+            data-timeline-bar
+            onPointerEnter={e =>
+              e.pointerType === "mouse" && setActive({ row: b.r, role: b.i })
+            }
+            onPointerLeave={e => e.pointerType === "mouse" && setActive(null)}
+            onClick={() => setActive({ row: b.r, role: b.i })}
+            style={{ cursor: "default" }}
+          >
+            <rect
+              x={b.start}
+              y={b.y}
+              width={b.width}
+              height={BAR}
+              rx={2}
+              className="fill-accent"
+              style={{
+                transform: `scaleX(${grown ? 1 : 0})`,
+                transformOrigin: "left",
+                transformBox: "fill-box",
+                transition: reduced
+                  ? undefined
+                  : `transform ${b.duration}ms linear ${b.delay}ms`,
+              }}
+            />
+            {/* Invisible, taller hit area: a 12px bar is hard to tap */}
+            <rect
+              x={b.start}
+              y={b.y - 10}
+              width={b.width}
+              height={BAR + 20}
+              fill="transparent"
+            />
+          </g>
+        ))}
+      </svg>
+
+      {tip && (
+        <div
+          className="bg-background border-border pointer-events-none absolute z-10 rounded-lg border p-3 text-sm leading-snug shadow-md"
+          style={{
+            left: tip.left,
+            top: tip.top,
+            width: tipW,
+            transform: tip.above ? "translateY(-100%)" : undefined,
+          }}
+        >
+          <p className="text-heading font-semibold">{tip.row.organization}</p>
+          <p>
+            <Both text={tip.role.title} />
+          </p>
+          <p className="text-muted-foreground tabular-nums">
+            <Both
+              text={{
+                es: period(tip.role.from, tip.role.to, "es"),
+                en: period(tip.role.from, tip.role.to, "en"),
+              }}
+            />
+          </p>
+          <p className="mt-2">
+            <Both text={tip.row.description} />
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
