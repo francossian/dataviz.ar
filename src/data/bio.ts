@@ -36,16 +36,12 @@ export const bio = {
   /** "What I do", one paragraph per item */
   about: [
     {
-      es: "Trabajo con datos de punta a punta: desde diseñar la encuesta y decidir qué preguntar, hasta limpiar, analizar y mostrar los resultados.",
-      en: "I work with data end to end: from designing the survey and deciding what to ask, to cleaning, analyzing and presenting the results.",
+      es: "Hola, soy Franco y me encantan los datos y la visualización. Trabajo como analista de datos y, con los años, se volvieron mi forma de entender un poco mejor la realidad. Me gusta pensar que, bien mostrados, también pueden ayudar a otros a entenderla.",
+      en: "Hi, I'm Franco, and I love data and visualization. I work as a data analyst, and over the years data has become my way of understanding reality a little better. I like to think that, shown well, it can help others understand it too.",
     },
     {
-      es: "Uso R y Python para el análisis, Power BI para dashboards y D3.js cuando un gráfico necesita contar algo que una herramienta estándar no puede.",
-      en: "I use R and Python for analysis, Power BI for dashboards, and D3.js when a chart needs to say something a standard tool can't.",
-    },
-    {
-      es: "Me interesan especialmente la investigación de mercado y social, y los datos públicos de Argentina.",
-      en: "I'm especially interested in market and social research, and in Argentina's public data.",
+      es: "Soy curioso por naturaleza: cuando algo me llama la atención, voy a la fuente, reviso los números y trato de ver qué hay detrás. De eso se trata este sitio: compartir información confiable, que sirva para tomar decisiones o simplemente para alimentar la curiosidad, con datos que cualquiera pueda chequear.",
+      en: "I'm curious by nature: when something catches my eye, I go to the source, look at the numbers and try to see what's behind them. That's what this site is about: sharing reliable information that helps people make decisions, or simply feeds their curiosity, with data anyone can check.",
     },
   ] satisfies Bilingual[],
 
