@@ -57,11 +57,19 @@ const pct = { decimals: 1, suffix: " %" };
     </p>
 
     <h2 class="section-label">1 · Por defecto</h2>
-    <BarChart id="lab-patogenos" source="datos de ejemplo" data={pathogens} />
+    <BarChart
+      id="lab-patogenos"
+      title="Casos por patógeno"
+      subtitle="Subtítulo de ejemplo"
+      source="datos de ejemplo"
+      data={pathogens}
+    />
 
     <h2 class="section-label">2 · Negativos, valores y eje abajo</h2>
     <BarChart
       id="lab-apuestas-largo-plazo"
+      title="Rendimiento por estrategia de apuesta, 2012–2026"
+      subtitle="Apostando $1 a cada partido de la Liga Profesional, % de lo apostado"
       source="football-data.co.uk, cuotas promedio de cierre"
       note="Elaborado por Franco Guiragossian"
       data={strategiesLongRun}
@@ -73,6 +81,8 @@ const pct = { decimals: 1, suffix: " %" };
     <h2 class="section-label">3 · Positivos y negativos</h2>
     <BarChart
       id="lab-apuestas-corto-plazo"
+      title="Rendimiento por estrategia de apuesta, 2025–2026"
+      subtitle="Cuotas de Bet365, 630 partidos, % de lo apostado"
       source="football-data.co.uk"
       data={strategiesShortRun}
       values="all"
@@ -89,6 +99,8 @@ const pct = { decimals: 1, suffix: " %" };
     >
       <BarChart
         id="lab-patogenos-paleta"
+        title="Casos por patógeno"
+        subtitle="Subtítulo de ejemplo"
         source="datos de ejemplo"
         data={pathogens}
       />
@@ -98,6 +110,8 @@ const pct = { decimals: 1, suffix: " %" };
     <div style="max-width: 380px">
       <BarChart
         id="lab-apuestas-angosto"
+        title="Rendimiento por estrategia de apuesta, 2012–2026"
+        subtitle="Apostando $1 a cada partido, %"
         source="football-data.co.uk"
         note="Elaborado por Franco Guiragossian"
         data={strategiesLongRun}
