@@ -4,8 +4,6 @@
  *
  *   <BarChart
  *     id="apuestas-estrategias"           // stable slug: seeds the signature
- *     title="…"
- *     subtitle="…"
  *     source="football-data.co.uk"
  *     note="Elaborado por Franco Guiragossian"   // optional 2nd footer line
  *     data={[{ label: "Al favorito", value: -6.8 }, …]}
@@ -37,8 +35,6 @@ type Datum = { label: string; value: number };
 type Props = {
   id: string;
   data: Datum[];
-  title: string;
-  subtitle?: string;
   source?: string;
   /** Optional second footer line, e.g. "Elaborado por …" */
   note?: string;
@@ -67,8 +63,6 @@ type Props = {
 const {
   id,
   data,
-  title,
-  subtitle,
   source,
   note,
   lang = langFromUrl(Astro.url),
@@ -240,7 +234,7 @@ const table = {
 };
 ---
 
-<ChartFrame {id} {title} {subtitle} {source} {note} {lang} {table}>
+<ChartFrame {id} {source} {note} {lang} {table}>
   {
     variants.map(v => (
       <div class={`chart-plot chart-plot--${v.key}`}>

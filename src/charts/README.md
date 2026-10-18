@@ -15,8 +15,6 @@ import BarChart from "@/charts/BarChart.astro";
 
 <BarChart
   id="apuestas-estrategias"
-  title="…"
-  subtitle="…"
   source="football-data.co.uk"
   note="Elaborado por Franco Guiragossian"
   data={[
@@ -44,8 +42,6 @@ import BarChart from "@/charts/BarChart.astro";
 | ------------- | ------------- | ------------------------------------------------------------- |
 | `id`          | — (required)  | Stable slug; seeds the signature                              |
 | `data`        | — (required)  | `{ label, value }[]`; negative values grow to the left        |
-| `title`       | — (required)  | Chart title                                                   |
-| `subtitle`    | —             | Line under the title                                          |
 | `source`      | —             | Shown as "Fuente: …" / "Source: …"                            |
 | `note`        | —             | Second footer line, e.g. "Elaborado por …"                    |
 | `lang`        | page language | `"es"` or `"en"`: number format and "Fuente/Source"           |
@@ -71,11 +67,11 @@ labels placed next to a bar take the bar's colour.
 
 ## Files
 
-| File                   | Role                                                      |
-| ---------------------- | --------------------------------------------------------- |
-| `BarChart.astro`       | Bar chart template (layout maths + SVG)                   |
-| `ChartFrame.astro`     | Shared frame: panel, title, source, signature, a11y table |
-| `ChartSignature.astro` | The 3×3 fingerprint + "dataviz.ar"                        |
-| `fingerprint.ts`       | Seeded pattern from `id`                                  |
-| `format.ts`            | es-AR / en-US numbers, true minus sign                    |
-| `textWidth.ts`         | Text width estimate (labels inside/outside decisions)     |
+| File                   | Role                                                  |
+| ---------------------- | ----------------------------------------------------- |
+| `BarChart.astro`       | Bar chart template (layout maths + SVG)               |
+| `ChartFrame.astro`     | Shared frame: panel, source, signature, a11y table    |
+| `ChartSignature.astro` | The 3×3 fingerprint + "dataviz.ar"                    |
+| `fingerprint.ts`       | Seeded pattern from `id`                              |
+| `format.ts`            | es-AR / en-US numbers, true minus sign                |
+| `textWidth.ts`         | Text width estimate (labels inside/outside decisions) |

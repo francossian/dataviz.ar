@@ -99,8 +99,8 @@
    "Context in navy, story in terracota" (CLAUDE.md). */
 :root {
   --chart-bg: var(--color-chart-bg);
-  --chart-ink: var(--color-ink); /* titles' body text, labels */
-  --chart-title: var(--color-navy);
+  --chart-ink: var(--color-ink); /* text */
+  --chart-signature: var(--color-navy); /* dots + "dataviz.ar" */
   --chart-muted: var(--color-slate); /* subtitle, ticks, source */
   --chart-grid: var(--color-ink); /* drawn at low opacity */
   --chart-primary: var(--color-navy); /* default marks / context */
