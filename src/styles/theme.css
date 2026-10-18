@@ -42,6 +42,12 @@
 
   /* Charts */
   --color-chart-bg: #eeeeee;
+
+  /* Employers' brand colours — only for the Bio experience timeline.
+     Taken from each company's logo. */
+  --color-aysa: #253081;
+  --color-upwork: #14a800; /* "Up Green" */
+  --color-pcmi: #ab272d;
 }
 
 /* 2. THEME ROLES, registered with Tailwind so classes like bg-background

@@ -19,6 +19,8 @@ export interface Role {
 /** One row of the Experience timeline: a workplace and its roles */
 export interface Experience {
   organization: string;
+  /** Bar colour, e.g. "var(--color-aysa)" (defined in theme.css) */
+  color: string;
   /** In order. Several roles at the same place share a row. */
   roles: Role[];
   /** Shown in the tooltip, a sentence or two */
@@ -54,6 +56,7 @@ export const bio = {
   experience: [
     {
       organization: "AySA",
+      color: "var(--color-aysa)",
       roles: [
         {
           from: "2015-01",
@@ -68,6 +71,7 @@ export const bio = {
     },
     {
       organization: "Upwork",
+      color: "var(--color-upwork)",
       roles: [
         {
           from: "2018-10",
@@ -85,6 +89,7 @@ export const bio = {
     },
     {
       organization: "AMI / PCMI",
+      color: "var(--color-pcmi)",
       roles: [
         {
           from: "2022-06",

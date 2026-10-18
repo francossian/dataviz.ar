@@ -7,9 +7,10 @@
  * width and height and only draws. D3 only does the maths (the time scale
  * and its ticks); React writes the SVG.
  *
- * Colours are the page's theme roles (Tailwind classes such as
- * fill-accent), not the chart panel colours: this timeline sits directly
- * on the page, so it has to follow light/dark mode.
+ * Each workplace has its own brand colour (`color` in src/data/bio.ts,
+ * defined in theme.css) with its name in white inside the bar. The
+ * timeline sits on a white panel (set by the page), the same in light and
+ * dark mode, so gridlines and years use the fixed chart roles.
  *
  * Texts are rendered in BOTH languages; global.css hides the one that
  * doesn't match <html lang>, so the ES/EN switch works without React
@@ -28,13 +29,13 @@ type Props = {
   today: string;
 };
 
-// ── Vertical layout, in px. A row = label on top, bar underneath. ──
-export const ROW = 46;
-const LABEL_Y = 16; // label baseline, from the top of its row
-const BAR_Y = 24; // top of the bar, from the top of its row
-const BAR = 12; // bar thickness
+// ── Vertical layout, in px. A row = one bar with its name inside. ──
+export const ROW = 34;
+const BAR_Y = 4; // top of the bar, from the top of its row
+const BAR = 24; // bar thickness: room for the name inside
 export const AXIS = 28; // room for the years under the rows
-const FONT = 13; // labels
+const FONT = 13; // names
+const INSET = 8; // name's distance from the start of the bar
 const TICK_FONT = 12; // years
 const PAD = 16; // left/right, so "2015" isn't cut at the edge
 const SPLIT = 2; // gap between two roles at the same place
@@ -144,6 +145,7 @@ export default function ExperienceTimeline({
         start,
         width: Math.max(1, end - start - (last ? 0 : SPLIT)),
         y: r * ROW + BAR_Y,
+        color: row.color,
         // One imaginary cursor sweeps the axis at constant speed; each bar
         // grows while the cursor passes over it. Delay = when the cursor
         // reaches its start, duration = how long it takes to cross it.
@@ -213,38 +215,19 @@ export default function ExperienceTimeline({
               x2={x(d)}
               y1={0}
               y2={plotBottom}
-              className="stroke-border"
+              className="chart-gridline"
             />
             <text
               x={x(d)}
               y={plotBottom + 18}
               textAnchor="middle"
               fontSize={TICK_FONT}
-              className="fill-muted-foreground tabular-nums"
+              className="chart-tick tabular-nums"
             >
               {d.getUTCFullYear()}
             </text>
           </g>
         ))}
-
-        {/* Workplace name above its first bar; flipped to end at the right
-            edge if it wouldn't fit */}
-        {rows.map((row, r) => {
-          const start = x(monthStart(row.roles[0].from));
-          const fits = start + textWidth(row.organization, FONT) <= width;
-          return (
-            <text
-              key={row.organization}
-              x={fits ? start : width}
-              y={r * ROW + LABEL_Y}
-              textAnchor={fits ? "start" : "end"}
-              fontSize={FONT}
-              className="fill-foreground font-medium"
-            >
-              {row.organization}
-            </text>
-          );
-        })}
 
         {bars.map(b => (
           <g
@@ -262,8 +245,8 @@ export default function ExperienceTimeline({
               y={b.y}
               width={b.width}
               height={BAR}
-              rx={2}
-              className="fill-accent"
+              rx={3}
+              fill={b.color}
               style={{
                 transform: `scaleX(${grown ? 1 : 0})`,
                 transformOrigin: "left",
@@ -273,16 +256,48 @@ export default function ExperienceTimeline({
                   : `transform ${b.duration}ms linear ${b.delay}ms`,
               }}
             />
-            {/* Invisible, taller hit area: a 12px bar is hard to tap */}
+            {/* Invisible, taller hit area: easier to tap */}
             <rect
               x={b.start}
-              y={b.y - 10}
+              y={b.y - 4}
               width={b.width}
-              height={BAR + 20}
+              height={BAR + 8}
               fill="transparent"
             />
           </g>
         ))}
+
+        {/* Workplace name in white inside its first bar; in dark text just
+            after the row if the bar is too short for it. It fades in once
+            its bar has started growing past it. */}
+        {rows.map((row, r) => {
+          const first = bars.find(b => b.r === r && b.i === 0)!;
+          const inside =
+            textWidth(row.organization, FONT) + 2 * INSET <= first.width;
+          const rowEnd = Math.max(
+            ...bars.filter(b => b.r === r).map(b => b.start + b.width)
+          );
+          return (
+            <text
+              key={row.organization}
+              x={inside ? first.start + INSET : rowEnd + INSET}
+              y={first.y + BAR / 2}
+              dominantBaseline="central"
+              fontSize={FONT}
+              fill={inside ? "var(--color-white)" : "var(--chart-ink)"}
+              className="font-medium"
+              style={{
+                pointerEvents: "none",
+                opacity: grown ? 1 : 0,
+                transition: reduced
+                  ? undefined
+                  : `opacity 300ms ease ${first.delay + Math.min(first.duration, 300)}ms`,
+              }}
+            >
+              {row.organization}
+            </text>
+          );
+        })}
       </svg>
 
       {tip && (
