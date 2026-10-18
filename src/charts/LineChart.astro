@@ -188,17 +188,26 @@ const table = {
             </g>
           ))}
 
-          {/* Date labels under the plot */}
+          {/* Vertical gridlines at each date label, and the labels under the plot */}
           {v.xTicks.map(t => (
-            <text
-              x={t.x}
-              y={v.bottom + 16}
-              text-anchor="middle"
-              class="chart-tick"
-              font-size={v.font}
-            >
-              {t.label}
-            </text>
+            <g>
+              <line
+                x1={t.x}
+                x2={t.x}
+                y1={v.top}
+                y2={v.bottom}
+                class="chart-gridline"
+              />
+              <text
+                x={t.x}
+                y={v.bottom + 16}
+                text-anchor="middle"
+                class="chart-tick"
+                font-size={v.font}
+              >
+                {t.label}
+              </text>
+            </g>
           ))}
 
           <path d={v.path} class="chart-line" />
