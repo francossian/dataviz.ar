@@ -39,23 +39,29 @@ const sourceLabel = lang === "es" ? "Fuente" : "Source";
     <slot />
   </div>
 
-  <table class="sr-only">
-    <caption>{title}</caption>
-    <thead>
-      <tr>{table.headers.map(h => <th scope="col">{h}</th>)}</tr>
-    </thead>
-    <tbody>
-      {
-        table.rows.map(row => (
-          <tr>
-            {row.map(cell => (
-              <td>{cell}</td>
-            ))}
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
+  {
+    /* Hidden on a wrapping div, not on the <table>: tables ignore the 1px
+      size of .sr-only and their <caption> would be drawn below the chart */
+  }
+  <div class="sr-only">
+    <table>
+      <caption>{title}</caption>
+      <thead>
+        <tr>{table.headers.map(h => <th scope="col">{h}</th>)}</tr>
+      </thead>
+      <tbody>
+        {
+          table.rows.map(row => (
+            <tr>
+              {row.map(cell => (
+                <td>{cell}</td>
+              ))}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
 
   {
     /* Footer: left, the source and an optional second line (two lines
