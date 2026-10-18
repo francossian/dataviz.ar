@@ -3,7 +3,7 @@
  * Bio: photo, what I do, experience and contact. Bilingual general page —
  * texts come from src/data/bio.ts and follow the ES/EN switch.
  */
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
@@ -26,12 +26,51 @@ const socialLabels: Record<string, string> = {
 
 const link =
   "text-accent decoration-decor hover:text-highlight hover:decoration-highlight underline decoration-2 underline-offset-3";
+
+// Structured data (schema.org) so search engines and AI assistants read
+// this page as the profile of one person, and connect it to the same
+// person on LinkedIn, GitHub, etc. (`sameAs`). Not visible on the page.
+const portrait = await getImage({ src: photo, width: 512, format: "webp" });
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  mainEntity: {
+    "@type": "Person",
+    name: config.site.author,
+    url: config.site.profile,
+    image: new URL(portrait.src, Astro.site).href,
+    jobTitle: "Data Specialist",
+    worksFor: {
+      "@type": "Organization",
+      name: "AMI — Americas Market Intelligence",
+      url: "https://americasmi.com",
+    },
+    knowsAbout: [
+      "Data analysis",
+      "Data visualization",
+      "Survey design",
+      "Market research",
+      "Statistics",
+      "R",
+      "Python",
+      "Power BI",
+      "D3.js",
+    ],
+    sameAs: config.socials.map(s => s.url),
+  },
+};
 ---
 
 <Layout
   title={`Bio | ${config.site.title}`}
-  description="Franco Guiragossian — análisis de datos, encuestas y visualización."
+  description="Franco Guiragossian: análisis y visualización de datos. Encuestas, investigación de mercado, R, Python, Power BI y D3.js."
 >
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(structuredData)}
+  />
   <Header />
   <main id="main-content" class="app-layout pb-12">
     <div class="mt-10 flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
@@ -72,7 +111,7 @@ const link =
             <UIText es="Experiencia" en="Experience" />
           </h2>
           {/* Same #EEEEEE panel as every chart, in light and dark mode alike */}
-          <div class="rounded-lg bg-chart-bg px-4 pt-4 pb-1">
+          <div class="bg-chart-bg rounded-lg px-4 pt-4 pb-1">
             {/* Interactive timeline: a React island, loaded when it scrolls
                 into view. `today` (the build date) is where current roles end. */}
             <ResponsiveExperienceTimeline
