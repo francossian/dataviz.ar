@@ -59,54 +59,48 @@ const pct = { decimals: 1, suffix: " %" };
     <h2 class="section-label">1 · Por defecto</h2>
     <BarChart
       id="lab-patogenos"
-      title="Brucella triplica al segundo de la lista"
-      subtitle="Casos registrados por patógeno"
+      title="Casos por patógeno"
+      subtitle="Subtítulo de ejemplo"
       source="datos de ejemplo"
       data={pathogens}
     />
 
-    <h2 class="section-label">2 · Negativos, todos los valores, eje abajo</h2>
+    <h2 class="section-label">2 · Negativos, valores y eje abajo</h2>
     <BarChart
       id="lab-apuestas-largo-plazo"
-      title="A largo plazo, ninguna estrategia le gana a la casa"
-      subtitle="Rendimiento apostando $1 a cada partido, % de lo apostado. Liga Profesional, 2012–2026"
+      title="Rendimiento por estrategia de apuesta, 2012–2026"
+      subtitle="Apostando $1 a cada partido de la Liga Profesional, % de lo apostado"
       source="football-data.co.uk, cuotas promedio de cierre"
+      note="Elaborado por Franco Guiragossian"
       data={strategiesLongRun}
       values="all"
-      highlight="min"
       axis="bottom"
       format={pct}
     />
 
-    <h2 class="section-label">
-      3 · Positivos y negativos, destacados y anotación
-    </h2>
+    <h2 class="section-label">3 · Positivos y negativos</h2>
     <BarChart
       id="lab-apuestas-corto-plazo"
-      title="En una temporada, dos estrategias parecían ganadoras"
-      subtitle="Mismo cálculo con cuotas de Bet365, solo 2025–2026 (630 partidos)"
+      title="Rendimiento por estrategia de apuesta, 2025–2026"
+      subtitle="Cuotas de Bet365, 630 partidos, % de lo apostado"
       source="football-data.co.uk"
       data={strategiesShortRun}
       values="all"
-      highlight={["Siempre al no favorito", "Siempre al visitante"]}
-      annotations={[
-        { label: "Siempre al no favorito", text: "en 14 años: −9,2 %" },
-      ]}
       format={pct}
     />
 
     <h2 class="section-label">4 · Paleta cambiada solo con variables CSS</h2>
     <p class="text-muted-foreground mb-2 text-sm">
-      Mismo gráfico; el contenedor redefine --chart-primary y --chart-highlight.
-      Así se vería cambiar la paleta en theme.css.
+      Mismo gráfico 1; el contenedor redefine --chart-primary y --chart-bg. Así
+      se vería cambiar la paleta en theme.css.
     </p>
     <div
-      style="--chart-primary: var(--color-celeste); --chart-highlight: var(--color-navy); --chart-bg: var(--color-crema)"
+      style="--chart-primary: var(--color-terracota); --chart-bg: var(--color-crema)"
     >
       <BarChart
         id="lab-patogenos-paleta"
-        title="Brucella triplica al segundo de la lista"
-        subtitle="Casos registrados por patógeno"
+        title="Casos por patógeno"
+        subtitle="Subtítulo de ejemplo"
         source="datos de ejemplo"
         data={pathogens}
       />
@@ -116,12 +110,12 @@ const pct = { decimals: 1, suffix: " %" };
     <div style="max-width: 380px">
       <BarChart
         id="lab-apuestas-angosto"
-        title="A largo plazo, ninguna estrategia le gana a la casa"
-        subtitle="Rendimiento apostando $1 a cada partido, %"
+        title="Rendimiento por estrategia de apuesta, 2012–2026"
+        subtitle="Apostando $1 a cada partido, %"
         source="football-data.co.uk"
+        note="Elaborado por Franco Guiragossian"
         data={strategiesLongRun}
         values="all"
-        highlight="min"
         format={pct}
       />
     </div>

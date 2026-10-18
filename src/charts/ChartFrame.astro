@@ -13,18 +13,18 @@ import type { Lang } from "@/blogs";
 type Props = {
   /** Stable slug: seeds the signature's fingerprint */
   id: string;
-  /** States the conclusion, not the topic ("X triples Y", not "X and Y") */
   title: string;
-  /** What is measured, units, period */
   subtitle?: string;
   /** Data source — always attribute it (CLAUDE.md) */
   source?: string;
+  /** Optional second footer line under the source, e.g. "Elaborado por …" */
+  note?: string;
   lang: Lang;
   /** Same data, for screen readers */
   table: { headers: string[]; rows: string[][] };
 };
 
-const { id, title, subtitle, source, lang, table } = Astro.props;
+const { id, title, subtitle, source, note, lang, table } = Astro.props;
 const sourceLabel = lang === "es" ? "Fuente" : "Source";
 ---
 
@@ -57,8 +57,15 @@ const sourceLabel = lang === "es" ? "Fuente" : "Source";
     </tbody>
   </table>
 
+  {
+    /* Footer: left, the source and an optional second line (two lines
+      max); right, the signature */
+  }
   <div class="chart-footer">
-    <span class="chart-source">{source && `${sourceLabel}: ${source}`}</span>
+    <div class="chart-credits">
+      {source && <span>{`${sourceLabel}: ${source}`}</span>}
+      {note && <span>{note}</span>}
+    </div>
     <ChartSignature {id} />
   </div>
 </figure>

@@ -58,12 +58,18 @@
 
 .chart-footer {
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* signature lines up with the last credit line */
   justify-content: space-between;
   gap: 1rem;
   margin-top: 1rem;
   font-size: 0.75rem;
   color: var(--chart-muted);
+}
+/* Source + optional second line, stacked */
+.chart-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
 }
 
 /* Signature: fingerprint dots + "dataviz.ar" */
@@ -99,7 +105,8 @@
   fill: var(--chart-muted);
 }
 
-/* Bars: context in primary, the story in highlight */
+/* Bars: one colour. The highlight colour only applies when a chart asks
+   for it (BarChart `highlight`). */
 .chart-bar {
   fill: var(--chart-primary);
 }
@@ -118,11 +125,7 @@
 .is-highlight .chart-label.is-outside {
   fill: var(--chart-highlight);
 }
-.chart-value {
-  font-weight: 700;
-}
 
 .chart-annotation {
   fill: var(--chart-muted);
-  font-style: italic;
 }

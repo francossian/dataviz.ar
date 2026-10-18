@@ -15,9 +15,10 @@ import BarChart from "@/charts/BarChart.astro";
 
 <BarChart
   id="apuestas-estrategias"
-  title="A largo plazo, ninguna estrategia le gana a la casa"
-  subtitle="Rendimiento apostando $1 a cada partido, %"
+  title="…"
+  subtitle="…"
   source="football-data.co.uk"
+  note="Elaborado por Franco Guiragossian"
   data={[
     { label: "Siempre al favorito", value: -6.8 },
     { label: "Siempre al local", value: -5.1 },
@@ -27,12 +28,13 @@ import BarChart from "@/charts/BarChart.astro";
 />
 ```
 
-## House rules (built into the templates)
+## Defaults
 
-- **Title = the conclusion** ("X triples Y"), subtitle = what is measured.
-- **Context in navy, the story in terracota** (`highlight`).
-- **Always a source**; numbers in the page's language (es: `1.234,5`).
-- **Signature**: a 3×3 dot grid + "dataviz.ar". The lit dots are this
+- **One colour.** A second colour (`highlight`) only when a chart needs it.
+- **Footer:** left, "Fuente: …" and an optional second line (`note`), two
+  lines max; right, the signature.
+- **Numbers** in the page's language (es: `1.234,5`).
+- **Signature:** a 3×3 dot grid + "dataviz.ar". The lit dots are this
   chart's fingerprint, seeded by `id` — keep `id` stable (a slug, not the
   title) so the pattern never changes.
 
@@ -42,12 +44,13 @@ import BarChart from "@/charts/BarChart.astro";
 | ------------- | ------------- | ------------------------------------------------------------- |
 | `id`          | — (required)  | Stable slug; seeds the signature                              |
 | `data`        | — (required)  | `{ label, value }[]`; negative values grow to the left        |
-| `title`       | — (required)  | The conclusion                                                |
-| `subtitle`    | —             | What is measured, units, period                               |
+| `title`       | — (required)  | Chart title                                                   |
+| `subtitle`    | —             | Line under the title                                          |
 | `source`      | —             | Shown as "Fuente: …" / "Source: …"                            |
+| `note`        | —             | Second footer line, e.g. "Elaborado por …"                    |
 | `lang`        | page language | `"es"` or `"en"`: number format and "Fuente/Source"           |
-| `highlight`   | `"max"`       | `"max"`, `"min"`, `"none"` or a list of labels                |
-| `values`      | `"highlight"` | Which bars show their value: `"highlight"`, `"all"`, `"none"` |
+| `highlight`   | `"none"`      | Second colour for `"max"`, `"min"` or a list of labels        |
+| `values`      | `"none"`      | Which bars show their value: `"none"`, `"all"`, `"highlight"` |
 | `axis`        | `"top"`       | Value axis on `"top"` or `"bottom"`                           |
 | `sort`        | `"desc"`      | `"desc"`, `"asc"` or `"none"` (keep data order)               |
 | `domain`      | auto          | `[min, max]` of the value axis                                |

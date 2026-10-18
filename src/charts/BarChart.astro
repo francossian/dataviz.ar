@@ -4,9 +4,10 @@
  *
  *   <BarChart
  *     id="apuestas-estrategias"           // stable slug: seeds the signature
- *     title="Ninguna estrategia le gana a la casa"   // the conclusion
- *     subtitle="Rendimiento apostando $1 por partido, %"
+ *     title="…"
+ *     subtitle="…"
  *     source="football-data.co.uk"
+ *     note="Elaborado por Franco Guiragossian"   // optional 2nd footer line
  *     data={[{ label: "Al favorito", value: -6.8 }, …]}
  *     format={{ decimals: 1, suffix: " %" }}
  *   />
@@ -39,11 +40,13 @@ type Props = {
   title: string;
   subtitle?: string;
   source?: string;
+  /** Optional second footer line, e.g. "Elaborado por …" */
+  note?: string;
   /** Number format and "Fuente/Source"; defaults to the page's language */
   lang?: Lang;
-  /** Bars in the highlight colour: by label, the largest, the smallest, or none */
+  /** Bars in a second colour — only when asked: by label, the largest, the smallest */
   highlight?: string[] | "max" | "min" | "none";
-  /** Which bars show their value */
+  /** Which bars show their value (none by default) */
   values?: "highlight" | "all" | "none";
   /** Where the value axis goes */
   axis?: "top" | "bottom";
@@ -67,9 +70,10 @@ const {
   title,
   subtitle,
   source,
+  note,
   lang = langFromUrl(Astro.url),
-  highlight = "max",
-  values = "highlight",
+  highlight = "none",
+  values = "none",
   axis = "top",
   sort = "desc",
   domain,
@@ -131,7 +135,7 @@ function layout({ width, row, font, tickFont }: Size) {
       const value = fmt(d.value);
       const showValue = values === "all" || (values === "highlight" && hi);
       const labelW = textWidth(d.label, font);
-      const valueW = textWidth(value, font, true);
+      const valueW = textWidth(value, font);
 
       const labelInside =
         labels === "inside" ||
@@ -236,7 +240,7 @@ const table = {
 };
 ---
 
-<ChartFrame {id} {title} {subtitle} {source} {lang} {table}>
+<ChartFrame {id} {title} {subtitle} {source} {note} {lang} {table}>
   {
     variants.map(v => (
       <div class={`chart-plot chart-plot--${v.key}`}>
