@@ -9,7 +9,7 @@
  *
  * Each workplace has its own brand colour (`color` in src/data/bio.ts,
  * defined in theme.css) with its name in white inside the bar. The
- * timeline sits on a white panel (set by the page), the same in light and
+ * timeline sits on the #EEEEEE chart panel (set by the page), the same in light and
  * dark mode, so gridlines and years use the fixed chart roles.
  *
  * Texts are rendered in BOTH languages; global.css hides the one that
