@@ -1,45 +1,63 @@
 /**
- * General pages (home, portfolio, bio, 404) are BILINGUAL: they are built
- * once with both languages in the HTML, and the visitor's language decides
- * which one shows. Blog pages are not — each blog is in its own language.
+ * General pages (home, portfolio, bio) exist in BOTH languages, each at its
+ * own URL:
  *
- * How the switch works (no flash, no separate /en/ URLs):
- *  1. Text is rendered twice — <span data-lang-only="es"> and "en" — by
- *     UIText.astro, straight from the es.ts / en.ts dictionaries.
- *  2. An inline script in Layout.astro's <head> sets <html lang> from the
- *     stored choice or the browser language BEFORE the first paint.
- *  3. A CSS rule in global.css hides whichever language doesn't match
- *     <html lang>.
- * Attributes (aria-label, title) can't be rendered twice, so they carry
- * both values in data-i18n-attrs and the same script applies the right one.
+ *   Spanish (default)        English
+ *   /                        /en/
+ *   /portfolio/              /en/portfolio/
+ *   /franco-guiragossian/    /en/franco-guiragossian/
+ *
+ * One .astro file per page, under src/pages/[...lang]/: its
+ * getStaticPaths (generalPagePaths below) builds it twice, and the page
+ * reads its language from the URL (langFromUrl in src/blogs.ts). Every
+ * text then comes out in that one language — UIText picks it.
+ *
+ * Why separate URLs (and not one page that switches on the client): search
+ * engines index each language on its own, with its own title and
+ * description, and the two versions are linked with hreflang. Blogs work
+ * the same way already (/datos-y-relatos/ vs /data-stories/).
+ *
+ * The visitor's browser language is never used to redirect (Google
+ * advises against it: its crawler would never see the other version).
+ * Instead a small notice offers the other language — see LangSuggest.
  */
-import { blogFromPath, type Lang } from "@/blogs";
-import { useTranslations } from "@/i18n";
-import type { UIStrings } from "@/i18n/types";
+import { DEFAULT_LANG, type Lang } from "@/blogs";
 
 /** localStorage key for the visitor's explicit ES/EN choice */
 export const LANG_STORAGE_KEY = "dataviz-lang";
 
-/** Pages outside the two blogs switch language on the client */
-export function isBilingualPage(url: URL): boolean {
-  return !blogFromPath(url.pathname);
+/** URL prefix of the English general pages */
+export const EN_PREFIX = "en";
+
+/** The general pages, by path without language prefix ("" = home) */
+export const GENERAL_PAGES = ["", "portfolio", "franco-guiragossian"];
+
+/** getStaticPaths for a page under src/pages/[...lang]/: one per language */
+export function generalPagePaths() {
+  return [
+    { params: { lang: undefined } }, // Spanish, no prefix
+    { params: { lang: EN_PREFIX } },
+  ];
 }
 
-export type PickString = (t: UIStrings) => string;
+/**
+ * URL of a general page in a language:
+ * pageUrl("en", "portfolio") → "/en/portfolio/", pageUrl("es", "") → "/"
+ */
+export function pageUrl(lang: Lang, path: string): string {
+  const clean = path.replace(/^\/+|\/+$/g, "");
+  const prefix = lang === DEFAULT_LANG ? "" : `/${EN_PREFIX}`;
+  return clean ? `${prefix}/${clean}/` : `${prefix}/`;
+}
 
 /**
- * Value for a data-i18n-attrs attribute: each attribute's text in both
- * languages, e.g. { "aria-label": t => t.a11y.openMenu }
- * → '{"aria-label":{"es":"Abrir menú","en":"Open menu"}}'
+ * The general page a pathname is, without its language prefix
+ * ("/en/portfolio/" → "portfolio"), or undefined if it isn't one
+ * (blogs, 404, the chart lab…).
  */
-export function i18nAttrs(attrs: Record<string, PickString>): string {
-  const both = (pick: PickString) =>
-    Object.fromEntries(
-      (["es", "en"] as Lang[]).map(lang => [lang, pick(useTranslations(lang))])
-    );
-  return JSON.stringify(
-    Object.fromEntries(
-      Object.entries(attrs).map(([attr, pick]) => [attr, both(pick)])
-    )
-  );
+export function generalPageFromPath(pathname: string): string | undefined {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments[0] === EN_PREFIX) segments.shift();
+  const path = segments.join("/");
+  return GENERAL_PAGES.includes(path) ? path : undefined;
 }

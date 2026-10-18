@@ -1,8 +1,8 @@
 ---
 /**
  * Portfolio: interactive projects (each on its own subdomain) and a
- * gallery of static visualizations. Bilingual page — headings follow the
- * ES/EN switch; project texts show both languages (see ProjectItem).
+ * gallery of static visualizations. Built twice: /portfolio/ (Spanish)
+ * and /en/portfolio/ (English) — see src/utils/bilingual.ts.
  */
 import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
@@ -11,7 +11,13 @@ import Footer from "@/components/Footer.astro";
 import UIText from "@/components/UIText.astro";
 import ProjectItem from "@/components/ProjectItem.astro";
 import VizGallery from "@/components/VizGallery.astro";
+import { langFromUrl } from "@/blogs";
+import { generalPagePaths } from "@/utils/bilingual";
 import config from "@/config";
+
+export const getStaticPaths = generalPagePaths;
+
+const lang = langFromUrl(Astro.url);
 
 const projects = (await getCollection("portfolio")).sort(
   (a, b) => a.data.order - b.data.order
@@ -20,7 +26,9 @@ const projects = (await getCollection("portfolio")).sort(
 
 <Layout
   title={`Portfolio | ${config.site.title}`}
-  description="Proyectos interactivos y visualizaciones de Franco Guiragossian."
+  description={lang === "es"
+    ? "Proyectos interactivos y visualizaciones de Franco Guiragossian."
+    : "Interactive projects and visualizations by Franco Guiragossian."}
 >
   <Header />
   <main id="main-content" class="app-layout pb-12">

@@ -3,14 +3,14 @@
  * One interactive project on the portfolio page, linking OUT to its own
  * subdomain. Editorial layout: a large screenshot, no card chrome.
  *
- * Bilingual inline: both titles and descriptions are always shown, each
- * tagged with its `lang` so screen readers pronounce it correctly.
+ * Title and description in the page's language (/portfolio/ or
+ * /en/portfolio/).
  */
 import { Image } from "astro:assets";
 import { getEntry, type CollectionEntry } from "astro:content";
 import UIText from "./UIText.astro";
 import { getPostUrl } from "@/utils/getPostPaths";
-import { langFromPostId } from "@/blogs";
+import { langFromPostId, langFromUrl } from "@/blogs";
 
 type Props = { project: CollectionEntry<"portfolio"> };
 
@@ -27,8 +27,9 @@ const {
   post,
 } = project.data;
 
-// A proper name ("Look at the Stars") is the same in both languages
-const sameTitle = title_es === title_en;
+const lang = langFromUrl(Astro.url);
+const title = lang === "es" ? title_es : title_en;
+const description = lang === "es" ? description_es : description_en;
 const host = new URL(url).host;
 
 // Optional "how I made it" post. Resolved at build time, so a typo in the
@@ -80,25 +81,15 @@ const link =
       href={url}
       target="_blank"
       rel="noopener"
-      lang="es"
       class="hover:text-highlight transition-colors"
     >
-      {title_es}
+      {title}
       <span class="sr-only">
         <UIText es="(se abre en una pestaña nueva)" en="(opens in a new tab)" />
       </span>
     </a>
   </h3>
-  {
-    !sameTitle && (
-      <p lang="en" class="text-muted-foreground text-sm">
-        {title_en}
-      </p>
-    )
-  }
-
-  <p lang="es" class="mt-2">{description_es}</p>
-  <p lang="en" class="text-muted-foreground mt-1">{description_en}</p>
+  <p class="mt-2">{description}</p>
 
   <p class="text-muted-foreground mt-3 text-sm">
     {meta}

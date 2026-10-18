@@ -37,7 +37,7 @@ export const BLOGS: Record<Lang, Blog> = {
 
 export const BLOG_LIST: Blog[] = Object.values(BLOGS);
 
-/** Language of pages outside the blogs (home, portfolio, bio) at build time */
+/** Language of pages outside the blogs without an /en/ prefix */
 export const DEFAULT_LANG: Lang = "es";
 
 export const otherLang = (lang: Lang): Lang => (lang === "es" ? "en" : "es");
@@ -48,9 +48,14 @@ export function blogFromPath(pathname: string): Blog | undefined {
   return BLOG_LIST.find(blog => blog.slug === first);
 }
 
-/** UI language for a page: its blog's language, else the site default */
+/**
+ * Language of a page, from its URL: a blog's own language; "en" for the
+ * English general pages (/en/…, see src/utils/bilingual.ts); else Spanish.
+ */
 export function langFromUrl(url: URL): Lang {
-  return blogFromPath(url.pathname)?.lang ?? DEFAULT_LANG;
+  const blog = blogFromPath(url.pathname);
+  if (blog) return blog.lang;
+  return url.pathname.split("/").find(Boolean) === "en" ? "en" : DEFAULT_LANG;
 }
 
 /** Root-relative URL inside a blog, e.g. blogUrl("en", "tags/") → "/data-stories/tags/" */

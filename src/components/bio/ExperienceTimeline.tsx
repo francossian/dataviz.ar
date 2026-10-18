@@ -11,14 +11,11 @@
  * defined in theme.css) with its name in white inside the bar. The
  * timeline sits on the #EEEEEE chart panel (set by the page), the same in light and
  * dark mode, so gridlines and years use the fixed chart roles.
- *
- * Texts are rendered in BOTH languages; global.css hides the one that
- * doesn't match <html lang>, so the ES/EN switch works without React
- * knowing about it.
  */
 import { useEffect, useState } from "react";
 import { scaleUtc } from "d3-scale";
-import type { Bilingual, Experience } from "@/data/bio";
+import type { Experience } from "@/data/bio";
+import type { Lang } from "@/blogs";
 import { textWidth } from "@/charts/textWidth";
 
 type Props = {
@@ -27,6 +24,8 @@ type Props = {
   rows: Experience[];
   /** "YYYY-MM-DD": where ongoing roles end (the build date) */
   today: string;
+  /** Language of the tooltips (the page's) */
+  lang: Lang;
 };
 
 // ── Vertical layout, in px. A row = one bar with its name inside. ──
@@ -84,27 +83,13 @@ const MONTHS = {
     "Dec",
   ],
 };
-function period(from: string, to: string | undefined, lang: "es" | "en") {
+function period(from: string, to: string | undefined, lang: Lang) {
   const fmt = (ym: string) => {
     const [y, m] = ym.split("-");
     return `${MONTHS[lang][Number(m) - 1]} ${y}`;
   };
   const end = to ? fmt(to) : lang === "es" ? "hoy" : "present";
   return `${fmt(from)} – ${end}`;
-}
-
-/** Both languages; CSS shows the one matching <html lang> */
-function Both({ text }: { text: Bilingual }) {
-  return (
-    <>
-      <span lang="es" data-lang-only="es">
-        {text.es}
-      </span>
-      <span lang="en" data-lang-only="en">
-        {text.en}
-      </span>
-    </>
-  );
 }
 
 type Active = { row: number; role: number };
@@ -114,6 +99,7 @@ export default function ExperienceTimeline({
   height,
   rows,
   today,
+  lang,
 }: Props) {
   const plotBottom = rows.length * ROW;
 
@@ -311,20 +297,11 @@ export default function ExperienceTimeline({
           }}
         >
           <p className="text-heading font-semibold">{tip.row.organization}</p>
-          <p>
-            <Both text={tip.role.title} />
-          </p>
+          <p>{tip.role.title[lang]}</p>
           <p className="text-muted-foreground tabular-nums">
-            <Both
-              text={{
-                es: period(tip.role.from, tip.role.to, "es"),
-                en: period(tip.role.from, tip.role.to, "en"),
-              }}
-            />
+            {period(tip.role.from, tip.role.to, lang)}
           </p>
-          <p className="mt-2">
-            <Both text={tip.row.description} />
-          </p>
+          <p className="mt-2">{tip.row.description[lang]}</p>
         </div>
       )}
     </div>

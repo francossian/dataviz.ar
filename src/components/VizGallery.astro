@@ -9,12 +9,14 @@
  * the backdrop. Without JavaScript, a thumbnail is a plain link to the
  * full-size image.
  *
- * Text follows the ES/EN switch (unlike project cards, which show both):
- * captions are short and the notes would double the length.
+ * Texts in the page's language (/portfolio/ or /en/portfolio/).
  */
 import { Image, getImage } from "astro:assets";
 import { getCollection } from "astro:content";
 import UIText from "./UIText.astro";
+import { langFromUrl } from "@/blogs";
+
+const lang = langFromUrl(Astro.url);
 
 const items = (await getCollection("visualizations")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
@@ -40,10 +42,7 @@ const gallery = await Promise.all(
     full: await getImage({ src: item.data.image, width: 1600 }),
     meta: (lang: "es" | "en") =>
       [monthYear(item.data.date, lang), ...item.data.tools].join(" · "),
-    // The image's alt text switches with the language like visible text
-    altAttrs: JSON.stringify({
-      alt: { es: item.data.alt_es, en: item.data.alt_en },
-    }),
+    alt: lang === "es" ? item.data.alt_es : item.data.alt_en,
   }))
 );
 ---
@@ -70,8 +69,7 @@ const gallery = await Promise.all(
             <div class="bg-chart-bg aspect-4/3 overflow-hidden rounded-lg">
               <Image
                 src={v.image}
-                alt={v.alt_es}
-                data-i18n-attrs={v.altAttrs}
+                alt={v.alt}
                 widths={[300, 600]}
                 sizes="(min-width: 768px) 240px, 45vw"
                 loading="lazy"
@@ -96,8 +94,7 @@ const gallery = await Promise.all(
                 <img
                   src={v.full.src}
                   {...v.full.attributes}
-                  alt={v.alt_es}
-                  data-i18n-attrs={v.altAttrs}
+                  alt={v.alt}
                   loading="lazy"
                   class="mx-auto h-auto max-h-[68dvh] w-auto max-w-full"
                 />
@@ -127,10 +124,7 @@ const gallery = await Promise.all(
             <form method="dialog" class="absolute end-2 top-2">
               <button
                 class="bg-background/90 hover:text-highlight rounded-full px-2.5 py-1 text-lg leading-none shadow"
-                aria-label="Cerrar"
-                data-i18n-attrs={JSON.stringify({
-                  "aria-label": { es: "Cerrar", en: "Close" },
-                })}
+                aria-label={lang === "es" ? "Cerrar" : "Close"}
               >
                 ✕
               </button>

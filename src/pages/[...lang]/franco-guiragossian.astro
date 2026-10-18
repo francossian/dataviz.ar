@@ -1,7 +1,8 @@
 ---
 /**
- * Bio: photo, what I do, experience and contact. Bilingual general page —
- * texts come from src/data/bio.ts and follow the ES/EN switch.
+ * Bio: photo, what I do, experience and contact. Built twice:
+ * /franco-guiragossian/ (Spanish) and /en/franco-guiragossian/ (English),
+ * see src/utils/bilingual.ts. Texts come from src/data/bio.ts.
  */
 import { Image, getImage } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
@@ -11,8 +12,13 @@ import UIText from "@/components/UIText.astro";
 import photo from "@/assets/images/franco.webp";
 import { bio } from "@/data/bio";
 import ResponsiveExperienceTimeline from "@/components/bio/ResponsiveExperienceTimeline";
-import { BLOGS, blogUrl } from "@/blogs";
+import { BLOGS, blogUrl, langFromUrl } from "@/blogs";
+import { generalPagePaths, pageUrl } from "@/utils/bilingual";
 import config from "@/config";
+
+export const getStaticPaths = generalPagePaths;
+
+const lang = langFromUrl(Astro.url);
 
 // Display names for the social profiles in astro-paper.config.ts
 const socialLabels: Record<string, string> = {
@@ -37,7 +43,7 @@ const structuredData = {
   mainEntity: {
     "@type": "Person",
     name: config.site.author,
-    url: config.site.profile,
+    url: new URL(pageUrl(lang, "franco-guiragossian"), Astro.site).href,
     image: new URL(portrait.src, Astro.site).href,
     jobTitle: "Data Specialist",
     worksFor: {
@@ -63,7 +69,9 @@ const structuredData = {
 
 <Layout
   title={`Bio | ${config.site.title}`}
-  description="Franco Guiragossian: análisis y visualización de datos. Encuestas, investigación de mercado, R, Python, Power BI y D3.js."
+  description={lang === "es"
+    ? "Franco Guiragossian: análisis y visualización de datos. Encuestas, investigación de mercado, R, Python, Power BI y D3.js."
+    : "Franco Guiragossian: data analysis and visualization. Surveys, market research, R, Python, Power BI and D3.js."}
 >
   <script
     slot="head"
@@ -117,6 +125,7 @@ const structuredData = {
             <ResponsiveExperienceTimeline
               client:visible
               rows={bio.experience}
+              {lang}
               today={new Date().toISOString().slice(0, 10)}
             />
           </div>
@@ -146,20 +155,43 @@ const structuredData = {
     </h2>
     {
       /* Sentences with links inside can't go through UIText (plain
-        strings), so each language is its own paragraph */
+        strings), so each language has its own paragraph */
     }
-    <p class="text-lg leading-relaxed" lang="es" data-lang-only="es">
-      Mis proyectos están en el <a href="/portfolio/" class={link}>portfolio</a
-      >. Escribo en <a href={blogUrl("es")} class={link}>{BLOGS.es.title}</a> y, en
-      inglés, en <a href={blogUrl("en")} lang="en" class={link}
-        >{BLOGS.en.title}</a
-      >.
-    </p>
-    <p class="text-lg leading-relaxed" lang="en" data-lang-only="en">
-      My projects are in the <a href="/portfolio/" class={link}>portfolio</a>. I
-      write at <a href={blogUrl("en")} class={link}>{BLOGS.en.title}</a> and, in Spanish,
-      at <a href={blogUrl("es")} lang="es" class={link}>{BLOGS.es.title}</a>.
-    </p>
+    {
+      lang === "es" ? (
+        <p class="text-lg leading-relaxed">
+          Mis proyectos están en el{" "}
+          <a href={pageUrl("es", "portfolio")} class={link}>
+            portfolio
+          </a>
+          . Escribo en{" "}
+          <a href={blogUrl("es")} class={link}>
+            {BLOGS.es.title}
+          </a>{" "}
+          y, en inglés, en{" "}
+          <a href={blogUrl("en")} lang="en" class={link}>
+            {BLOGS.en.title}
+          </a>
+          .
+        </p>
+      ) : (
+        <p class="text-lg leading-relaxed">
+          My projects are in the{" "}
+          <a href={pageUrl("en", "portfolio")} class={link}>
+            portfolio
+          </a>
+          . I write at{" "}
+          <a href={blogUrl("en")} class={link}>
+            {BLOGS.en.title}
+          </a>{" "}
+          and, in Spanish, at{" "}
+          <a href={blogUrl("es")} lang="es" class={link}>
+            {BLOGS.es.title}
+          </a>
+          .
+        </p>
+      )
+    }
 
     <h2 class="section-label">
       <UIText es="Contacto" en="Contact" />
