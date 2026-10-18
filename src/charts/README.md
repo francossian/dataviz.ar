@@ -59,6 +59,24 @@ import BarChart from "@/charts/BarChart.astro";
 | `annotations` | `[]`          | `{ label, text }[]`: a short note after that bar              |
 | `labels`      | `"auto"`      | Category label `"inside"`/`"outside"` the bar, or `"auto"`    |
 
+## LineChart options
+
+One series over time. Value labels on the left, dates underneath.
+
+| Prop        | Default       | What it does                                                       |
+| ----------- | ------------- | ------------------------------------------------------------------ |
+| `id`        | — (required)  | Stable slug; seeds the signature                                   |
+| `data`      | — (required)  | `{ date, value }[]`; date as `"YYYY"`, `"YYYY-MM"`, `"YYYY-MM-DD"` |
+| `title`     | — (required)  | Chart title                                                        |
+| `subtitle`  | —             | Line under the title                                               |
+| `source`    | —             | Shown as "Fuente: …" / "Source: …"                                 |
+| `note`      | —             | Second footer line, e.g. "Elaborado por …"                         |
+| `lang`      | page language | `"es"` or `"en"`: number/date format and "Fuente/Source"           |
+| `domain`    | auto          | `[min, max]` of the value axis                                     |
+| `ticks`     | `5`           | Approximate number of horizontal gridlines                         |
+| `dateTicks` | `6`           | Approximate number of date labels                                  |
+| `format`    | `{}`          | `{ decimals, prefix, suffix }` for the value axis                  |
+
 ## Colours
 
 No colour is written in the chart code. Marks use CSS classes
@@ -74,6 +92,7 @@ labels placed next to a bar take the bar's colour.
 | File                   | Role                                                      |
 | ---------------------- | --------------------------------------------------------- |
 | `BarChart.astro`       | Bar chart template (layout maths + SVG)                   |
+| `LineChart.astro`      | Line chart template, one series over time                 |
 | `ChartFrame.astro`     | Shared frame: panel, title, source, signature, a11y table |
 | `ChartSignature.astro` | The 3×3 fingerprint + "dataviz.ar"                        |
 | `fingerprint.ts`       | Seeded pattern from `id`                                  |

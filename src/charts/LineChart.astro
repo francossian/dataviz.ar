@@ -1,0 +1,209 @@
+---
+/**
+ * LineChart — one series over time, in the dataviz.ar house style.
+ *
+ *   <LineChart
+ *     id="apuestas-favorito"              // stable slug: seeds the signature
+ *     title="…"
+ *     subtitle="…"
+ *     source="football-data.co.uk"
+ *     note="Elaborado por Franco Guiragossian"   // optional 2nd footer line
+ *     data={[{ date: "2012-08", value: -26.2 }, …]}
+ *     format={{ decimals: 1, suffix: " %" }}
+ *   />
+ *
+ * Same approach as BarChart: D3 only does the maths (scales, ticks), the
+ * SVG is written here at BUILD time (no JavaScript on the page), colours
+ * come from charts.css. Drawn twice (wide/narrow) and CSS picks one.
+ *
+ * Dates: "YYYY", "YYYY-MM" or "YYYY-MM-DD" strings, or Date objects.
+ */
+import { scaleLinear, scaleUtc } from "d3-scale";
+import { extent } from "d3-array";
+import ChartFrame from "./ChartFrame.astro";
+import { makeFormatter, type NumberFormat } from "./format";
+import { textWidth } from "./textWidth";
+import { langFromUrl, type Lang } from "@/blogs";
+
+type Datum = { date: string | Date; value: number };
+
+type Props = {
+  id: string;
+  data: Datum[];
+  title: string;
+  subtitle?: string;
+  source?: string;
+  /** Optional second footer line, e.g. "Elaborado por …" */
+  note?: string;
+  /** Number/date format and "Fuente/Source"; defaults to the page's language */
+  lang?: Lang;
+  /** Value-axis limits (default: round numbers around the data) */
+  domain?: [number, number];
+  /** Approximate number of horizontal gridlines */
+  ticks?: number;
+  /** Approximate number of date labels */
+  dateTicks?: number;
+  /** Decimals, prefix ("$"), suffix (" %") for the value axis */
+  format?: NumberFormat;
+};
+
+const {
+  id,
+  data,
+  title,
+  subtitle,
+  source,
+  note,
+  lang = langFromUrl(Astro.url),
+  domain,
+  ticks = 5,
+  dateTicks = 6,
+  format = {},
+} = Astro.props;
+
+// "2012" → Jan 1st, "2012-08" → Aug 1st; UTC so the date never shifts
+const toDate = (d: string | Date) =>
+  d instanceof Date
+    ? d
+    : new Date(`${d}${"-01-01".slice(d.length - 4)}T00:00:00Z`);
+const points = data
+  .map(d => ({ date: toDate(d.date), value: d.value }))
+  .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+// Axis labels: only the decimals a tick needs ("−10 %", not "−10,0 %")
+const tickFmt = makeFormatter(lang, { ...format, decimals: undefined });
+const valueFmt = makeFormatter(lang, format);
+const locale = lang === "es" ? "es-AR" : "en-US";
+const yearFmt = new Intl.DateTimeFormat(locale, {
+  year: "numeric",
+  timeZone: "UTC",
+});
+const monthFmt = new Intl.DateTimeFormat(locale, {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+// Year-only labels when every tick falls on Jan 1st, "mmm aaaa" otherwise
+function dateLabels(dates: Date[]) {
+  const yearly = dates.every(
+    d => d.getUTCMonth() === 0 && d.getUTCDate() === 1
+  );
+  return dates.map(d =>
+    yearly ? yearFmt.format(d) : monthFmt.format(d).replace(/\./g, "")
+  );
+}
+
+const [minDate, maxDate] = extent(points, p => p.date) as [Date, Date];
+const [minValue = 0, maxValue = 0] = extent(points, p => p.value);
+
+// ── Layout for one width. Pure geometry: returns what to draw. ──
+type Size = { width: number; height: number; font: number };
+const GAP = 8; // between value labels and the plot
+const DATE_SPACE = 24; // room for the date labels under the plot
+
+function layout({ width, height, font }: Size) {
+  const y0 = scaleLinear()
+    .domain(domain ?? [minValue, maxValue])
+    .nice(ticks);
+  const yTicks = y0.ticks(ticks);
+  // Left margin = widest value label
+  const left = Math.max(...yTicks.map(t => textWidth(tickFmt(t), font))) + GAP;
+  const top = font / 2 + 2; // the top label sits on its gridline
+  const bottom = height - DATE_SPACE;
+
+  const y = y0.copy().range([bottom, top]);
+  const x = scaleUtc()
+    .domain([minDate, maxDate])
+    .range([left, width - 4]);
+
+  const xTickDates = x.ticks(dateTicks);
+  const xLabels = dateLabels(xTickDates);
+
+  // The line: straight segments between points (no smoothing)
+  const path = points
+    .map(
+      (p, i) =>
+        `${i ? "L" : "M"}${x(p.date).toFixed(1)},${y(p.value).toFixed(1)}`
+    )
+    .join("");
+
+  return {
+    width,
+    height,
+    font,
+    left,
+    right: width - 4,
+    top,
+    bottom,
+    path,
+    yTicks: yTicks.map(t => ({ y: y(t), label: tickFmt(t), zero: t === 0 })),
+    xTicks: xTickDates.map((d, i) => ({ x: x(d), label: xLabels[i] })),
+  };
+}
+
+const variants = [
+  { key: "wide", ...layout({ width: 640, height: 320, font: 12 }) },
+  { key: "narrow", ...layout({ width: 360, height: 240, font: 11 }) },
+];
+
+const table = {
+  headers: [
+    lang === "es" ? "Fecha" : "Date",
+    lang === "es" ? "Valor" : "Value",
+  ],
+  rows: points.map(p => [dateLabels([p.date])[0], valueFmt(p.value)]),
+};
+---
+
+<ChartFrame {id} {title} {subtitle} {source} {note} {lang} {table}>
+  {
+    variants.map(v => (
+      <div class={`chart-plot chart-plot--${v.key}`}>
+        <svg
+          viewBox={`0 0 ${v.width} ${v.height}`}
+          width={v.width}
+          height={v.height}
+          focusable="false"
+        >
+          {/* Horizontal gridlines with their value at the left */}
+          {v.yTicks.map(t => (
+            <g>
+              <line
+                x1={v.left}
+                x2={v.right}
+                y1={t.y}
+                y2={t.y}
+                class={t.zero ? "chart-zero" : "chart-gridline"}
+              />
+              <text
+                x={v.left - GAP}
+                y={t.y}
+                text-anchor="end"
+                dominant-baseline="central"
+                class="chart-tick"
+                font-size={v.font}
+              >
+                {t.label}
+              </text>
+            </g>
+          ))}
+
+          {/* Date labels under the plot */}
+          {v.xTicks.map(t => (
+            <text
+              x={t.x}
+              y={v.bottom + 16}
+              text-anchor="middle"
+              class="chart-tick"
+              font-size={v.font}
+            >
+              {t.label}
+            </text>
+          ))}
+
+          <path d={v.path} class="chart-line" />
+        </svg>
+      </div>
+    ))
+  }
+</ChartFrame>

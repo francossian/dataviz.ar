@@ -8,6 +8,10 @@ import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import BarChart from "@/charts/BarChart.astro";
+import LineChart from "@/charts/LineChart.astro";
+// Monthly cumulative return of "always $1 on the favourite", 2012–2026
+// (football-data.co.uk, average closing odds)
+import favouriteSeries from "./_data/apuestas-favorito.json";
 
 export function getStaticPaths() {
   return import.meta.env.DEV ? [{ params: { page: "graficos" } }] : [];
@@ -116,6 +120,29 @@ const pct = { decimals: 1, suffix: " %" };
         note="Elaborado por Franco Guiragossian"
         data={strategiesLongRun}
         values="all"
+        format={pct}
+      />
+    </div>
+
+    <h2 class="section-label">6 · Línea, por defecto</h2>
+    <LineChart
+      id="lab-apuestas-favorito"
+      title="Rendimiento acumulado de apostar siempre al favorito"
+      subtitle="Apostando $1 a cada partido de la Liga Profesional, % de lo apostado"
+      source="football-data.co.uk, cuotas promedio de cierre"
+      note="Elaborado por Franco Guiragossian"
+      data={favouriteSeries}
+      format={pct}
+    />
+
+    <h2 class="section-label">7 · Línea, espacio angosto</h2>
+    <div style="max-width: 380px">
+      <LineChart
+        id="lab-apuestas-favorito-angosto"
+        title="Rendimiento acumulado de apostar siempre al favorito"
+        subtitle="% de lo apostado"
+        source="football-data.co.uk"
+        data={favouriteSeries}
         format={pct}
       />
     </div>

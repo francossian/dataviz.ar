@@ -129,3 +129,12 @@
 .chart-annotation {
   fill: var(--chart-muted);
 }
+
+/* Lines (LineChart): one colour, like the bars */
+.chart-line {
+  fill: none;
+  stroke: var(--chart-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
