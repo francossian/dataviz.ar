@@ -14,6 +14,8 @@ export interface Role {
   /** "YYYY-MM", last month in the role. Leave out if it's the current one. */
   to?: string;
   title: Bilingual;
+  /** Shown in brackets after the title: "part-time", "freelance"… */
+  type?: Bilingual;
 }
 
 /** One row of the Experience timeline: a workplace and its roles */
@@ -36,12 +38,12 @@ export const bio = {
   /** "What I do", one paragraph per item */
   about: [
     {
-      es: "Hola, soy Franco y me encantan los datos y la visualización. Trabajo como analista de datos y, con los años, se volvieron mi forma de entender un poco mejor la realidad. Me gusta pensar que, bien mostrados, también pueden ayudar a otros a entenderla.",
-      en: "Hi, I'm Franco, and I love data and visualization. I work as a data analyst, and over the years data has become my way of understanding reality a little better. I like to think that, shown well, it can help others understand it too.",
+      es: "Hola, soy Franco, un apasionado por los datos y la visualización de los mismos. Trabajo como analista de datos y, estoy convencido que entender cómo analizar e interpretar datos ayuda a entender un poco mejor la realidad. Me gusta pensar que, bien mostrados, también pueden ayudar a otros a entenderla.",
+      en: "Hi, I'm Franco, and I'm passionate about data and data visualization. I work as a data analyst, and I'm convinced that knowing how to analyze and interpret data helps us understand reality a little better. I like to think that, shown well, data can help others understand it too.",
     },
     {
-      es: "Soy curioso por naturaleza: cuando algo me llama la atención, voy a la fuente, reviso los números y trato de ver qué hay detrás. De eso se trata este sitio: compartir información confiable, que sirva para tomar decisiones o simplemente para alimentar la curiosidad, con datos que cualquiera pueda chequear.",
-      en: "I'm curious by nature: when something catches my eye, I go to the source, look at the numbers and try to see what's behind them. That's what this site is about: sharing reliable information that helps people make decisions, or simply feeds their curiosity, with data anyone can check.",
+      es: "Cuando algo me llama la atención, voy a la fuente, reviso los números y trato de ver qué hay detrás. De eso se trata este sitio: compartir información confiable, que sirva para tomar decisiones o simplemente alimentar la curiosidad, con datos que cualquiera pueda chequear.",
+      en: "When something catches my eye, I go to the source, look at the numbers and try to see what's behind them. That's what this site is about: sharing reliable information that helps people make decisions, or simply feeds their curiosity, with data anyone can check.",
     },
   ] satisfies Bilingual[],
 
@@ -58,6 +60,7 @@ export const bio = {
           from: "2015-01",
           to: "2023-01",
           title: { es: "Analista técnico", en: "Technical Data Analyst" },
+          type: { es: "part-time", en: "part-time" },
         },
       ],
       description: {
@@ -72,10 +75,8 @@ export const bio = {
         {
           from: "2018-10",
           to: "2026-05",
-          title: {
-            es: "Análisis de datos (freelance)",
-            en: "Data Analysis Services (Freelance)",
-          },
+          title: { es: "Análisis de datos", en: "Data Analysis Services" },
+          type: { es: "freelance", en: "freelance" },
         },
       ],
       description: {
@@ -91,10 +92,12 @@ export const bio = {
           from: "2022-06",
           to: "2026-04",
           title: { es: "Consultor de datos", en: "Data Consultant" },
+          type: { es: "freelance", en: "freelance" },
         },
         {
           from: "2026-05",
           title: { es: "Data Specialist", en: "Data Specialist" },
+          type: { es: "full time", en: "full-time" },
         },
       ],
       description: {

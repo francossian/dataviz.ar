@@ -297,7 +297,10 @@ export default function ExperienceTimeline({
           }}
         >
           <p className="text-heading font-semibold">{tip.row.organization}</p>
-          <p>{tip.role.title[lang]}</p>
+          <p>
+            {tip.role.title[lang]}
+            {tip.role.type && ` (${tip.role.type[lang]})`}
+          </p>
           <p className="text-muted-foreground tabular-nums">
             {period(tip.role.from, tip.role.to, lang)}
           </p>

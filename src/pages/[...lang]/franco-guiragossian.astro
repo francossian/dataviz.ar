@@ -137,8 +137,14 @@ const structuredData = {
                 {item.organization}:{" "}
                 {item.roles.map(role => (
                   <span>
-                    <UIText es={role.title.es} en={role.title.en} /> (
-                    {role.from} – {role.to ?? <UIText es="hoy" en="present" />}
+                    <UIText es={role.title.es} en={role.title.en} />
+                    {role.type && (
+                      <>
+                        {" "}
+                        (<UIText es={role.type.es} en={role.type.en} />)
+                      </>
+                    )}{" "}
+                    ({role.from} – {role.to ?? <UIText es="hoy" en="present" />}
                     ).{" "}
                   </span>
                 ))}
