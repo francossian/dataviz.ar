@@ -1,0 +1,102 @@
+---
+/**
+ * "This page is also in English →" / "Esta página también está en
+ * español →": a small notice on general pages, for visitors whose browser
+ * language isn't the page's.
+ *
+ * Suggest, don't redirect: Google advises against redirecting by browser
+ * language (its crawler would never reach the other version), and a
+ * visitor may simply prefer the language they landed on.
+ *
+ * Hidden in the HTML; the inline script below shows it before the first
+ * paint, only if the visitor hasn't chosen a language yet (localStorage,
+ * set by following the link, the ES/EN switch, or closing the notice).
+ */
+import { langFromUrl, otherLang } from "@/blogs";
+import {
+  generalPageFromPath,
+  LANG_STORAGE_KEY,
+  pageUrl,
+} from "@/utils/bilingual";
+
+const lang = langFromUrl(Astro.url);
+const other = otherLang(lang);
+const page = generalPageFromPath(Astro.url.pathname);
+
+// Written in the OTHER language: it's for someone who reads that one
+const text = {
+  es: { message: "Esta página también está en español", close: "Cerrar" },
+  en: { message: "This page is also in English", close: "Close" },
+}[other];
+---
+
+{
+  page !== undefined && (
+    <div
+      id="lang-suggest"
+      data-page-lang={lang}
+      lang={other}
+      hidden
+      class="app-layout"
+    >
+      <div class="bg-muted mt-3 flex items-center justify-between gap-4 rounded-lg px-4 py-2 text-sm">
+        <a
+          href={pageUrl(other, page)}
+          hreflang={other}
+          data-lang-link={other}
+          class="text-accent decoration-decor hover:text-highlight font-medium underline decoration-2 underline-offset-3"
+        >
+          {text.message} →
+        </a>
+        <button
+          type="button"
+          data-lang-suggest-close
+          class="text-muted-foreground hover:text-foreground px-1"
+          aria-label={text.close}
+          title={text.close}
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  )
+}
+
+<script is:inline define:vars={{ KEY: LANG_STORAGE_KEY }}>
+  (function () {
+    const box = document.getElementById("lang-suggest");
+    if (!box) return;
+    let stored = null;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch (e) {}
+    if (stored) return; // the visitor already chose
+    const nav =
+      (navigator.languages && navigator.languages[0]) ||
+      navigator.language ||
+      "";
+    const browser = nav.toLowerCase().startsWith("es") ? "es" : "en";
+    if (browser !== box.dataset.pageLang) box.hidden = false;
+  })();
+</script>
+
+<script>
+  import { LANG_STORAGE_KEY } from "@/utils/bilingual";
+
+  // Closing the notice = "I'll stay in this language". Delegated on
+  // document so it survives client-side page swaps.
+  document.addEventListener("click", event => {
+    const close = (event.target as HTMLElement | null)?.closest(
+      "[data-lang-suggest-close]"
+    );
+    if (!close) return;
+    const box = document.getElementById("lang-suggest");
+    if (!box) return;
+    box.hidden = true;
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, box.dataset.pageLang ?? "");
+    } catch {
+      // private mode: it will just show again next time
+    }
+  });
+</script>

@@ -1,36 +1,51 @@
 ---
+/**
+ * GitHub Pages serves this one page for every missing URL, Spanish or
+ * English, so it says everything in both languages at once.
+ */
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import LinkButton from "@/components/LinkButton.astro";
-import UIText from "@/components/UIText.astro";
-import { getRelativeLocaleUrl } from "astro:i18n";
 import { useTranslations } from "@/i18n";
+import { pageUrl } from "@/utils/bilingual";
 import config from "@/config";
 
-const locale = config.site.lang;
-const t = useTranslations(locale);
+const es = useTranslations("es");
+const en = useTranslations("en");
 ---
 
-<Layout title={`${t.notFound.title} | ${config.site.title}`}>
+<Layout
+  title={`${es.notFound.title} · ${en.notFound.title} | ${config.site.title}`}
+>
   <Header />
 
   <main
     id="main-content"
     class="app-layout my-1 flex flex-1 items-center justify-center"
   >
-    <div class="mb-14 flex flex-col items-center justify-center">
+    <div class="mb-14 flex flex-col items-center justify-center text-center">
       <h1 class="text-accent text-9xl font-bold">404</h1>
       <span aria-hidden="true"> ¯\_(ツ)_/¯ </span>
-      <p class="mt-4 text-2xl sm:text-3xl">
-        <UIText get={t => t.notFound.message} />
+      <p class="mt-4 text-2xl sm:text-3xl">{es.notFound.message}</p>
+      <p class="text-muted-foreground mt-1 text-xl" lang="en">
+        {en.notFound.message}
       </p>
-      <LinkButton
-        href={getRelativeLocaleUrl(locale, "")}
-        class="my-6 text-lg underline decoration-dashed underline-offset-8"
-      >
-        <UIText get={t => t.notFound.goHome} />
-      </LinkButton>
+      <div class="my-6 flex gap-6 text-lg">
+        <LinkButton
+          href={pageUrl("es", "")}
+          class="underline decoration-dashed underline-offset-8"
+        >
+          {es.notFound.goHome}
+        </LinkButton>
+        <LinkButton
+          href={pageUrl("en", "")}
+          lang="en"
+          class="underline decoration-dashed underline-offset-8"
+        >
+          {en.notFound.goHome}
+        </LinkButton>
+      </div>
     </div>
   </main>
 

@@ -1,0 +1,151 @@
+---
+/**
+ * Chart lab — a review page for the chart templates.
+ * Exists only in `npm run dev`: getStaticPaths returns nothing in a
+ * production build, so this page is never published.
+ */
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import BarChart from "@/charts/BarChart.astro";
+import LineChart from "@/charts/LineChart.astro";
+// Monthly cumulative return of "always $1 on the favourite", 2012–2026
+// (football-data.co.uk, average closing odds)
+import favouriteSeries from "./_data/apuestas-favorito.json";
+
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { page: "graficos" } }] : [];
+}
+
+const pathogens = [
+  { label: "Hantavirus", value: 6 },
+  { label: "Tularemia", value: 7 },
+  { label: "Dengue", value: 7 },
+  { label: "Ébola", value: 9 },
+  { label: "E. coli", value: 11 },
+  { label: "Tuberculosis", value: 15 },
+  { label: "Salmonella", value: 17 },
+  { label: "Vaccinia", value: 18 },
+  { label: "Brucella", value: 54 },
+];
+
+// Flat $1 per match, Liga Profesional 2012–2026, average closing odds
+// (football-data.co.uk) — computed in the betting analysis
+const strategiesLongRun = [
+  { label: "Siempre al favorito", value: -6.8 },
+  { label: "Siempre al local", value: -5.1 },
+  { label: "Siempre al empate", value: -5.0 },
+  { label: "Siempre al visitante", value: -11.1 },
+  { label: "Siempre al no favorito", value: -9.2 },
+  { label: "Al azar", value: -5.2 },
+];
+// Same strategies, Bet365 odds, only 2025–2026 (630 matches)
+const strategiesShortRun = [
+  { label: "Siempre al favorito", value: -14.1 },
+  { label: "Siempre al local", value: -6.9 },
+  { label: "Siempre al empate", value: -9.8 },
+  { label: "Siempre al visitante", value: 3.1 },
+  { label: "Siempre al no favorito", value: 11.1 },
+  { label: "Al azar", value: -18.1 },
+];
+const pct = { decimals: 1, suffix: " %" };
+---
+
+<Layout title="Laboratorio de gráficos">
+  <Header />
+  <main id="main-content" class="app-layout pb-16">
+    <h1 class="mt-10 text-3xl font-semibold">Laboratorio de gráficos</h1>
+    <p class="text-muted-foreground mt-2">
+      Solo en desarrollo. Cada gráfico usa el template BarChart con distintos
+      parámetros.
+    </p>
+
+    <h2 class="section-label">1 · Por defecto</h2>
+    <BarChart
+      id="lab-patogenos"
+      title="Casos por patógeno"
+      subtitle="Subtítulo de ejemplo"
+      source="datos de ejemplo"
+      data={pathogens}
+    />
+
+    <h2 class="section-label">2 · Negativos, valores y eje abajo</h2>
+    <BarChart
+      id="lab-apuestas-largo-plazo"
+      title="Rendimiento por estrategia de apuesta, 2012–2026"
+      subtitle="Apostando $1 a cada partido de la Liga Profesional, % de lo apostado"
+      source="football-data.co.uk, cuotas promedio de cierre"
+      note="Elaborado por Franco Guiragossian"
+      data={strategiesLongRun}
+      values="all"
+      axis="bottom"
+      format={pct}
+    />
+
+    <h2 class="section-label">3 · Positivos y negativos</h2>
+    <BarChart
+      id="lab-apuestas-corto-plazo"
+      title="Rendimiento por estrategia de apuesta, 2025–2026"
+      subtitle="Cuotas de Bet365, 630 partidos, % de lo apostado"
+      source="football-data.co.uk"
+      data={strategiesShortRun}
+      values="all"
+      format={pct}
+    />
+
+    <h2 class="section-label">4 · Paleta cambiada solo con variables CSS</h2>
+    <p class="text-muted-foreground mb-2 text-sm">
+      Mismo gráfico 1; el contenedor redefine --chart-primary y --chart-bg. Así
+      se vería cambiar la paleta en theme.css.
+    </p>
+    <div
+      style="--chart-primary: var(--color-terracota); --chart-bg: var(--color-crema)"
+    >
+      <BarChart
+        id="lab-patogenos-paleta"
+        title="Casos por patógeno"
+        subtitle="Subtítulo de ejemplo"
+        source="datos de ejemplo"
+        data={pathogens}
+      />
+    </div>
+
+    <h2 class="section-label">5 · Espacio angosto (versión celular)</h2>
+    <div style="max-width: 380px">
+      <BarChart
+        id="lab-apuestas-angosto"
+        title="Rendimiento por estrategia de apuesta, 2012–2026"
+        subtitle="Apostando $1 a cada partido, %"
+        source="football-data.co.uk"
+        note="Elaborado por Franco Guiragossian"
+        data={strategiesLongRun}
+        values="all"
+        format={pct}
+      />
+    </div>
+
+    <h2 class="section-label">6 · Línea, por defecto</h2>
+    <LineChart
+      id="lab-apuestas-favorito"
+      title="Rendimiento acumulado de apostar siempre al favorito"
+      subtitle="Apostando $1 a cada partido de la Liga Profesional, % de lo apostado"
+      source="football-data.co.uk, cuotas promedio de cierre"
+      note="Elaborado por Franco Guiragossian"
+      data={favouriteSeries}
+      format={pct}
+    />
+
+    <h2 class="section-label">7 · Línea, espacio angosto</h2>
+    <div style="max-width: 380px">
+      <LineChart
+        id="lab-apuestas-favorito-angosto"
+        title="Rendimiento acumulado de apostar siempre al favorito"
+        subtitle="% de lo apostado"
+        source="football-data.co.uk"
+        data={favouriteSeries}
+        format={pct}
+      />
+    </div>
+  </main>
+  <Footer />
+</Layout>

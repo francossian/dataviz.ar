@@ -30,7 +30,8 @@ Personal website for **Franco Guiragossian**, a data analyst specialized in data
 
 ## Multilingual (ES / EN)
 
-- Language is determined automatically by the visitor's IP geolocation.
+- Each language has its own URLs. General pages: Spanish at `/`, `/portfolio/`, `/franco-guiragossian/`; English under `/en/` (one file per page in `src/pages/[...lang]/`, see `src/utils/bilingual.ts`). Blogs: `/datos-y-relatos/` (ES) and `/data-stories/` (EN). Linked with `hreflang`.
+- No automatic redirect by language: a small notice offers the other language when the browser's differs; the ES/EN switch links to the other version and the choice is remembered.
 - Only two languages: Spanish and English.
 - All user-facing text must be translatable — never hardcode strings inline. Use a translation key system (e.g., i18n keys or a dictionary object).
 - Spanish is the primary language; English is the secondary/fallback.

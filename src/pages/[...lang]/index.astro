@@ -4,12 +4,9 @@
  * Deliberately no hero or calls to action — the site shows work, it
  * doesn't sell.
  *
- * Bilingual: both languages are in the HTML and the visitor's language
- * (stored choice, else browser) decides which one shows — see
- * src/utils/bilingual.ts. Spanish visitors see the latest from Datos y
- * relatos, English visitors from Data Stories.
+ * Built twice: / (Spanish, latest from Datos y relatos) and /en/
+ * (English, latest from Data Stories) — see src/utils/bilingual.ts.
  */
-import { getRelativeLocaleUrl } from "astro:i18n";
 import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import Layout from "@/layouts/Layout.astro";
@@ -19,24 +16,27 @@ import Card from "@/components/Card.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import UIText from "@/components/UIText.astro";
 import { getBlogPosts } from "@/utils/getBlogPosts";
-import { BLOG_LIST, blogUrl } from "@/blogs";
+import { BLOGS, blogUrl, langFromUrl } from "@/blogs";
 import { useTranslations } from "@/i18n";
+import { generalPagePaths, pageUrl } from "@/utils/bilingual";
 import config from "@/config";
 
-const homePath = getRelativeLocaleUrl(config.site.lang, "");
+export const getStaticPaths = generalPagePaths;
 
-// The latest posts of each blog, rendered side by side in the HTML; CSS
-// shows only the visitor's language.
-const blogs = await Promise.all(
-  BLOG_LIST.map(async blog => ({
-    blog,
-    t: useTranslations(blog.lang),
-    posts: (await getBlogPosts(blog.lang)).slice(0, config.posts.perIndex),
-  }))
-);
+const lang = langFromUrl(Astro.url);
+const homePath = pageUrl(lang, "");
+
+// The latest posts of the blog in this page's language
+const blog = BLOGS[lang];
+const t = useTranslations(lang);
+const posts = (await getBlogPosts(lang)).slice(0, config.posts.perIndex);
 ---
 
-<Layout>
+<Layout
+  description={lang === "es"
+    ? "Franco Guiragossian: análisis y visualización de datos."
+    : "Franco Guiragossian: data analysis and visualization."}
+>
   <Header />
   <main
     id="main-content"
@@ -57,49 +57,42 @@ const blogs = await Promise.all(
       </p>
     </section>
 
-    {
-      blogs.map(({ blog, t, posts }) => (
-        <section
-          id={`recent-posts-${blog.lang}`}
-          lang={blog.lang}
-          data-lang-only={blog.lang}
-          class="pt-12 pb-6"
+    <section id="recent-posts" class="pt-12 pb-6">
+      <h2 class="flex items-center gap-3 text-2xl font-semibold tracking-wide">
+        {t.home.recentPosts}
+        <a
+          href={blogUrl(blog.lang, "rss.xml")}
+          class="inline-block"
+          title={`RSS — ${blog.title}`}
         >
-          <h2 class="flex items-center gap-3 text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
-            <a
-              href={blogUrl(blog.lang, "rss.xml")}
-              class="inline-block"
-              title={`RSS — ${blog.title}`}
-            >
-              <IconRss
-                width={20}
-                height={20}
-                class="stroke-accent scale-110 stroke-3 rtl:-rotate-90"
-              />
-              <span class="sr-only">{`RSS — ${blog.title}`}</span>
-            </a>
-          </h2>
+          <IconRss
+            width={20}
+            height={20}
+            class="stroke-accent scale-110 stroke-3 rtl:-rotate-90"
+          />
+          <span class="sr-only">{`RSS — ${blog.title}`}</span>
+        </a>
+      </h2>
 
-          {posts.length > 0 ? (
-            <ul>
-              {posts.map(data => (
-                <Card variant="h3" {...data} />
-              ))}
-            </ul>
-          ) : (
-            <p class="text-muted-foreground mt-4">{t.blog.empty}</p>
-          )}
+      {
+        posts.length > 0 ? (
+          <ul>
+            {posts.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        ) : (
+          <p class="text-muted-foreground mt-4">{t.blog.empty}</p>
+        )
+      }
 
-          <div class="my-8 text-center">
-            <LinkButton href={blogUrl(blog.lang)}>
-              {blog.title}
-              <IconArrowRight class="inline-block rtl:-rotate-180" />
-            </LinkButton>
-          </div>
-        </section>
-      ))
-    }
+      <div class="my-8 text-center">
+        <LinkButton href={blogUrl(blog.lang)}>
+          {blog.title}
+          <IconArrowRight class="inline-block rtl:-rotate-180" />
+        </LinkButton>
+      </div>
+    </section>
 
     <section id="portfolio" class="border-border border-t pt-10 pb-6">
       <p>
@@ -108,7 +101,7 @@ const blogs = await Promise.all(
           en="Simulations, explorers and interactive infographics:"
         />{" "}
         <a
-          href="/portfolio/"
+          href={pageUrl(lang, "portfolio")}
           class="text-accent decoration-decor hover:text-highlight hover:decoration-highlight font-medium underline decoration-2 underline-offset-3"
         >
           <UIText es="ver portfolio" en="see portfolio" /> →

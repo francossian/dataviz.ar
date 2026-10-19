@@ -8,6 +8,8 @@ import tailwindcss from "@tailwindcss/vite";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import partytown from "@astrojs/partytown";
+// React only for islands that need real interactivity (Bio timeline)
+import react from "@astrojs/react";
 import { unified } from "@astrojs/markdown-remark";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
@@ -35,6 +37,7 @@ export default defineConfig({
       filter: page =>
         config.features?.showArchives !== false || !page.endsWith("/archives/"),
     }),
+    react(),
   ],
   // Single locale, no prefixed routes: AstroPaper uses this only so its
   // getRelativeLocaleUrl() helpers resolve. It does NOT create /es/ or /en/.

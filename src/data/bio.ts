@@ -5,51 +5,105 @@
  * Every text has a Spanish and an English version; the page shows the
  * one matching the visitor's language (ES/EN switch).
  */
-type Bilingual = { es: string; en: string };
+export type Bilingual = { es: string; en: string };
 
-export interface Experience {
-  /** e.g. "2024" or "mar 2024" */
+/** One role, i.e. one bar of the timeline */
+export interface Role {
+  /** "YYYY-MM", first month in the role */
   from: string;
-  /** Leave out for a current role ("hoy" / "present") */
+  /** "YYYY-MM", last month in the role. Leave out if it's the current one. */
   to?: string;
-  role: Bilingual;
+  title: Bilingual;
+  /** Shown in brackets after the title: "part-time", "freelance"… */
+  type?: Bilingual;
+}
+
+/** One row of the Experience timeline: a workplace and its roles */
+export interface Experience {
   organization: string;
-  /** Optional one-liner about the role */
-  description?: Bilingual;
+  /** Bar colour, e.g. "var(--color-aysa)" (defined in theme.css) */
+  color: string;
+  /** In order. Several roles at the same place share a row. */
+  roles: Role[];
+  /** Shown in the tooltip, a sentence or two */
+  description: Bilingual;
 }
 
 export const bio = {
   tagline: {
-    es: "Análisis de datos · Encuestas · Visualización",
-    en: "Data analysis · Surveys · Visualization",
+    es: "Análisis y visualización de datos",
+    en: "Data analysis and visualization",
   } satisfies Bilingual,
 
   /** "What I do", one paragraph per item */
   about: [
     {
-      es: "Trabajo con datos de punta a punta: desde diseñar la encuesta y decidir qué preguntar, hasta limpiar, analizar y mostrar los resultados.",
-      en: "I work with data end to end: from designing the survey and deciding what to ask, to cleaning, analyzing and presenting the results.",
+      es: "Hola, soy Franco, un apasionado por los datos y la visualización de los mismos. Trabajo como analista de datos y, estoy convencido que entender cómo analizar e interpretar datos ayuda a entender un poco mejor la realidad. Me gusta pensar que, bien mostrados, también pueden ayudar a otros a entenderla.",
+      en: "Hi, I'm Franco, and I'm passionate about data and data visualization. I work as a data analyst, and I'm convinced that knowing how to analyze and interpret data helps us understand reality a little better. I like to think that, shown well, data can help others understand it too.",
     },
     {
-      es: "Uso R y Python para el análisis, Power BI para dashboards y D3.js cuando un gráfico necesita contar algo que una herramienta estándar no puede.",
-      en: "I use R and Python for analysis, Power BI for dashboards, and D3.js when a chart needs to say something a standard tool can't.",
-    },
-    {
-      es: "Me interesan especialmente la investigación de mercado y social, y los datos públicos de Argentina.",
-      en: "I'm especially interested in market and social research, and in Argentina's public data.",
+      es: "Cuando algo me llama la atención, voy a la fuente, reviso los números y trato de ver qué hay detrás. De eso se trata este sitio: compartir información confiable, que sirva para tomar decisiones o simplemente alimentar la curiosidad, con datos que cualquiera pueda chequear.",
+      en: "When something catches my eye, I go to the source, look at the numbers and try to see what's behind them. That's what this site is about: sharing reliable information that helps people make decisions, or simply feeds their curiosity, with data anyone can check.",
     },
   ] satisfies Bilingual[],
 
   /**
-   * Most recent first. The "Experience" section only appears once there's
-   * at least one entry. Example:
-   *
-   * {
-   *   from: "2024",
-   *   role: { es: "Analista de datos", en: "Data analyst" },
-   *   organization: "Empresa",
-   *   description: { es: "Qué hacés ahí, en una línea.", en: "What you do there, in one line." },
-   * },
+   * The Experience timeline, one row per workplace, top to bottom in this
+   * order. Overlapping dates are fine: the rows run in parallel.
    */
-  experience: [] as Experience[],
+  experience: [
+    {
+      organization: "AySA",
+      color: "var(--color-aysa)",
+      roles: [
+        {
+          from: "2015-01",
+          to: "2023-01",
+          title: { es: "Analista técnico", en: "Technical Data Analyst" },
+          type: { es: "part-time", en: "part-time" },
+        },
+      ],
+      description: {
+        es: "Informes de calidad del servicio (mapeo de presiones, balance de agua) con datos de SAP BI. Estimación de datos faltantes con métodos estadísticos en R.",
+        en: "Service-quality reports (pressure mapping, water balance) from SAP BI data. Statistical estimation of missing data in R.",
+      },
+    },
+    {
+      organization: "Upwork",
+      color: "var(--color-upwork)",
+      roles: [
+        {
+          from: "2018-10",
+          to: "2026-05",
+          title: { es: "Análisis de datos", en: "Data Analysis Services" },
+          type: { es: "freelance", en: "freelance" },
+        },
+      ],
+      description: {
+        es: "Más de 75 proyectos con calificación perfecta y nivel Top Rated Plus: análisis de datos y estadístico, dashboards y redacción académica.",
+        en: "75+ projects with perfect client feedback, Top Rated Plus: data and statistical analysis, dashboards and academic writing.",
+      },
+    },
+    {
+      organization: "AMI / PCMI",
+      color: "var(--color-pcmi)",
+      roles: [
+        {
+          from: "2022-06",
+          to: "2026-04",
+          title: { es: "Consultor de datos", en: "Data Consultant" },
+          type: { es: "freelance", en: "freelance" },
+        },
+        {
+          from: "2026-05",
+          title: { es: "Data Specialist", en: "Data Specialist" },
+          type: { es: "full time", en: "full-time" },
+        },
+      ],
+      description: {
+        es: "Datos de punta a punta en investigación de mercado: programación de encuestas, tabulación, análisis estadístico, ETL y dashboards en Power BI, en estudios de decenas de países.",
+        en: "End-to-end data in market research: survey programming, tabulation, statistical analysis, ETL and Power BI dashboards, in studies across dozens of countries.",
+      },
+    },
+  ] as Experience[],
 };

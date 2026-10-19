@@ -1,0 +1,140 @@
+/* ═══════════════════════════════════════════════════════════════
+   Charts (src/charts/*). No colour is written here: every colour is a
+   chart role from theme.css (--chart-*), which in turn points at the
+   palette. To recolour all charts, edit the palette in theme.css.
+═══════════════════════════════════════════════════════════════ */
+
+/* The panel. `container-type` lets the plot pick its wide or narrow
+   version from the space it actually has (not the window size). */
+.chart {
+  container-type: inline-size;
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--chart-bg);
+  color: var(--chart-ink);
+  font-family: var(--font-app);
+}
+
+.chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.chart-title {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--chart-title);
+}
+.chart-subtitle {
+  font-size: 0.9375rem;
+  color: var(--chart-muted);
+}
+
+.chart-plot-area {
+  margin-top: 1.25rem;
+}
+.chart-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--font-app);
+}
+/* Wide by default; narrow version below 520 px of panel width */
+.chart-plot--narrow {
+  display: none;
+}
+@container (max-width: 520px) {
+  .chart-plot--wide {
+    display: none;
+  }
+  .chart-plot--narrow {
+    display: block;
+  }
+}
+
+.chart-footer {
+  display: flex;
+  align-items: flex-end; /* signature lines up with the last credit line */
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: var(--chart-muted);
+}
+/* Source + optional second line, stacked */
+.chart-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* Signature: fingerprint dots + "dataviz.ar" */
+.chart-signature {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--chart-title);
+}
+.chart-signature-dot {
+  fill: currentColor;
+  opacity: 0.22;
+}
+.chart-signature-dot.is-lit {
+  opacity: 1;
+}
+
+/* ── Marks ── */
+.chart-gridline {
+  stroke: var(--chart-grid);
+  stroke-opacity: 0.12;
+}
+.chart-zero {
+  stroke: var(--chart-grid);
+  stroke-opacity: 0.85;
+  stroke-width: 1.4;
+}
+.chart-tick {
+  fill: var(--chart-muted);
+}
+
+/* Bars: one colour. The highlight colour only applies when a chart asks
+   for it (BarChart `highlight`). */
+.chart-bar {
+  fill: var(--chart-primary);
+}
+.is-highlight .chart-bar {
+  fill: var(--chart-highlight);
+}
+
+/* Text on a bar is light; text next to a bar takes the bar's colour */
+.chart-label.is-inside,
+.chart-value.is-inside {
+  fill: var(--chart-on-mark);
+}
+.chart-label.is-outside {
+  fill: var(--chart-primary);
+}
+.is-highlight .chart-label.is-outside {
+  fill: var(--chart-highlight);
+}
+
+.chart-annotation {
+  fill: var(--chart-muted);
+}
+
+/* Lines (LineChart): one colour, like the bars */
+.chart-line {
+  fill: none;
+  stroke: var(--chart-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}

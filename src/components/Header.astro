@@ -1,5 +1,4 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
 import IconUnderline from "@/assets/icons/IconUnderline.svg";
 import IconMenuDeep from "@/assets/icons/IconMenuDeep.svg";
 import IconSunHigh from "@/assets/icons/IconSunHigh.svg";
@@ -11,10 +10,11 @@ import Logo from "@/assets/images/logo.svg";
 import LinkButton from "./LinkButton.astro";
 import UIText from "./UIText.astro";
 import LanguageToggle from "./LanguageToggle.astro";
+import LangSuggest from "./LangSuggest.astro";
 import { stripBase, stripLocale } from "@/utils/withBase";
 import { useTranslations } from "@/i18n";
-import { BLOGS, BLOG_LIST, blogUrl, langFromUrl } from "@/blogs";
-import { i18nAttrs, isBilingualPage } from "@/utils/bilingual";
+import { BLOGS, blogUrl, langFromUrl } from "@/blogs";
+import { EN_PREFIX, pageUrl } from "@/utils/bilingual";
 import config from "@/config";
 
 type Props = {
@@ -25,19 +25,13 @@ type Props = {
 const { altLangUrl } = Astro.props;
 const { site, features } = config;
 
-// URL helpers stay on the single Astro locale; UI language and the blog
-// shown in the nav come from the page itself (English inside Data Stories).
+// Everything in the page's language: its blog in the nav ("Datos y
+// relatos" or "Data Stories") and links to the general pages in that
+// language (/portfolio/ or /en/portfolio/).
 const locale = config.site.lang;
 const lang = langFromUrl(Astro.url);
 const t = useTranslations(lang);
-const blog = BLOGS[lang];
-
-// General pages show both languages' blog + search links (one hidden by
-// CSS); inside a blog, only that blog's. Same for accessible labels.
-const bilingual = isBilingualPage(Astro.url);
-const navBlogs = bilingual ? BLOG_LIST : [blog];
-const attrs = (map: Parameters<typeof i18nAttrs>[0]) =>
-  bilingual ? i18nAttrs(map) : undefined;
+const navBlogs = [BLOGS[lang]];
 
 // Strip the base prefix so isActive comparisons work regardless of deploy subdirectory.
 // e.g. with base "/blog": "/blog/posts/slug" → "/posts/slug"
@@ -47,7 +41,12 @@ const pathWithoutTrailingSlash =
     ? relativePath.slice(0, -1)
     : relativePath;
 
-const currentPath = stripLocale(pathWithoutTrailingSlash, locale);
+// Without the /en prefix, so "Portfolio" is active on /en/portfolio/ too
+const currentPath =
+  stripLocale(pathWithoutTrailingSlash, locale).replace(
+    new RegExp(`^/${EN_PREFIX}(?=/|$)`),
+    ""
+  ) || "/";
 
 const isActive = (path: string) => {
   const currentPathArray = currentPath.split("/").filter(p => p.trim());
@@ -64,6 +63,8 @@ const isActive = (path: string) => {
   <UIText get={t => t.a11y.skipToContent} />
 </a>
 
+<LangSuggest />
+
 <header
   class="app-layout flex flex-col items-center justify-between sm:flex-row"
 >
@@ -71,7 +72,7 @@ const isActive = (path: string) => {
     class="border-border bg-background relative flex w-full items-baseline justify-between border-b py-4 sm:items-center sm:py-6"
   >
     <a
-      href={getRelativeLocaleUrl(locale, "")}
+      href={pageUrl(lang, "")}
       class="font-heading text-heading absolute flex items-center gap-2.5 py-1 text-xl leading-8 font-semibold tracking-wide whitespace-nowrap sm:static sm:my-auto sm:text-2xl sm:leading-none"
     >
       <Logo class="size-9 shrink-0" aria-hidden="true" />
@@ -89,11 +90,6 @@ const isActive = (path: string) => {
         aria-controls="menu-items"
         data-label-open={t.a11y.openMenu}
         data-label-close={t.a11y.closeMenu}
-        data-i18n-attrs={attrs({
-          "aria-label": t => t.a11y.openMenu,
-          "data-label-open": t => t.a11y.openMenu,
-          "data-label-close": t => t.a11y.closeMenu,
-        })}
       >
         <IconX id="close-icon" class="hidden" />
         <IconMenuDeep id="menu-icon" />
@@ -103,15 +99,8 @@ const isActive = (path: string) => {
         class="[&>li>a]:hover:text-accent mt-4 hidden w-44 grid-cols-2 place-content-center gap-2 sm:mt-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0 sm:[&>li]:h-8 [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-3 [&>li>a]:text-center [&>li>a]:font-medium sm:[&>li>a]:px-2 sm:[&>li>a]:py-1"
       >
         {
-          /* The blog in the page's language: "Datos y relatos" or
-             "Data Stories". General pages list both; CSS shows one. */
-        }
-        {
           navBlogs.map(b => (
-            <li
-              class="col-span-2"
-              data-lang-only={bilingual ? b.lang : undefined}
-            >
+            <li class="col-span-2">
               <a
                 href={blogUrl(b.lang)}
                 lang={b.lang}
@@ -124,7 +113,7 @@ const isActive = (path: string) => {
         }
         <li class="col-span-2">
           <a
-            href="/portfolio/"
+            href={pageUrl(lang, "portfolio")}
             class:list={{ "active-nav": isActive("/portfolio") }}
           >
             Portfolio
@@ -132,7 +121,7 @@ const isActive = (path: string) => {
         </li>
         <li class="col-span-2">
           <a
-            href="/franco-guiragossian/"
+            href={pageUrl(lang, "franco-guiragossian")}
             class:list={{ "active-nav": isActive("/franco-guiragossian") }}
           >
             <UIText get={t => t.nav.about} />
@@ -143,10 +132,7 @@ const isActive = (path: string) => {
             navBlogs.map(b => {
               const bt = useTranslations(b.lang);
               return (
-                <li
-                  class="col-span-1 flex items-center justify-center"
-                  data-lang-only={bilingual ? b.lang : undefined}
-                >
+                <li class="col-span-1 flex items-center justify-center">
                   {/* Search lives inside each blog: it searches that blog */}
                   <LinkButton
                     href={blogUrl(b.lang, "search/")}
@@ -174,7 +160,6 @@ const isActive = (path: string) => {
                 id="theme-btn"
                 class="focus-outline hover:[&>svg]:stroke-accent relative size-12 p-4 sm:size-8"
                 title={t.a11y.toggleTheme}
-                data-i18n-attrs={attrs({ title: t => t.a11y.toggleTheme })}
                 aria-label="auto"
                 aria-live="polite"
               >

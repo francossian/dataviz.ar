@@ -2,8 +2,12 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { fontData, experimental_getFontFileURL } from "astro:assets";
 import satori from "satori";
+// satori takes plain {type, props} objects (no JSX here); with React's
+// types installed it expects a ReactNode, so the object is cast to one
+import type { ReactNode } from "react";
 import sharp from "sharp";
 import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
+import { paletteColor } from "@/utils/palette";
 import { getPostSlug } from "@/utils/getPostPaths";
 import { BLOGS, langFromPostId } from "@/blogs";
 import config from "@/config";
@@ -53,7 +57,7 @@ export const GET: APIRoute = async ({ props, url }) => {
       type: "div",
       props: {
         style: {
-          background: "#fbfaf7",
+          background: paletteColor("paper"),
           width: "100%",
           height: "100%",
           display: "flex",
@@ -68,8 +72,8 @@ export const GET: APIRoute = async ({ props, url }) => {
                 position: "absolute",
                 top: "-1px",
                 right: "-1px",
-                border: "4px solid #1b4965",
-                background: "#efe1c8",
+                border: `4px solid ${paletteColor("navy")}`,
+                background: paletteColor("crema"),
                 opacity: "0.9",
                 borderRadius: "4px",
                 display: "flex",
@@ -84,8 +88,8 @@ export const GET: APIRoute = async ({ props, url }) => {
             type: "div",
             props: {
               style: {
-                border: "4px solid #1b4965",
-                background: "#fbfaf7",
+                border: `4px solid ${paletteColor("navy")}`,
+                background: paletteColor("paper"),
                 borderRadius: "4px",
                 display: "flex",
                 justifyContent: "center",
@@ -170,7 +174,7 @@ export const GET: APIRoute = async ({ props, url }) => {
           },
         ],
       },
-    },
+    } as unknown as ReactNode,
     {
       width: 1200,
       height: 630,

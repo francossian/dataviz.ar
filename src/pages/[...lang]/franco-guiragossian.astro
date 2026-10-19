@@ -1,0 +1,218 @@
+---
+/**
+ * Bio: photo, what I do, experience and contact. Built twice:
+ * /franco-guiragossian/ (Spanish) and /en/franco-guiragossian/ (English),
+ * see src/utils/bilingual.ts. Texts come from src/data/bio.ts.
+ */
+import { Image, getImage } from "astro:assets";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import UIText from "@/components/UIText.astro";
+import photo from "@/assets/images/franco.webp";
+import { bio } from "@/data/bio";
+import ResponsiveExperienceTimeline from "@/components/bio/ResponsiveExperienceTimeline";
+import { BLOGS, blogUrl, langFromUrl } from "@/blogs";
+import { generalPagePaths, pageUrl } from "@/utils/bilingual";
+import config from "@/config";
+
+export const getStaticPaths = generalPagePaths;
+
+const lang = langFromUrl(Astro.url);
+
+// Display names for the social profiles in astro-paper.config.ts
+const socialLabels: Record<string, string> = {
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  bluesky: "Bluesky",
+  x: "X",
+  upwork: "Upwork",
+  mail: "Email",
+};
+
+const link =
+  "text-accent decoration-decor hover:text-highlight hover:decoration-highlight underline decoration-2 underline-offset-3";
+
+// Structured data (schema.org) so search engines and AI assistants read
+// this page as the profile of one person, and connect it to the same
+// person on LinkedIn, GitHub, etc. (`sameAs`). Not visible on the page.
+const portrait = await getImage({ src: photo, width: 512, format: "webp" });
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  mainEntity: {
+    "@type": "Person",
+    name: config.site.author,
+    url: new URL(pageUrl(lang, "franco-guiragossian"), Astro.site).href,
+    image: new URL(portrait.src, Astro.site).href,
+    jobTitle: "Data Specialist",
+    worksFor: {
+      "@type": "Organization",
+      name: "AMI — Americas Market Intelligence",
+      url: "https://americasmi.com",
+    },
+    knowsAbout: [
+      "Data analysis",
+      "Data visualization",
+      "Survey design",
+      "Market research",
+      "Statistics",
+      "R",
+      "Python",
+      "Power BI",
+      "D3.js",
+    ],
+    sameAs: config.socials.map(s => s.url),
+  },
+};
+---
+
+<Layout
+  title={`Bio | ${config.site.title}`}
+  description={lang === "es"
+    ? "Franco Guiragossian: análisis y visualización de datos. Encuestas, investigación de mercado, R, Python, Power BI y D3.js."
+    : "Franco Guiragossian: data analysis and visualization. Surveys, market research, R, Python, Power BI and D3.js."}
+>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(structuredData)}
+  />
+  <Header />
+  <main id="main-content" class="app-layout pb-12">
+    <div class="mt-10 flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+      {/* 1024px source → Astro serves ~144/288px WebP for 1x/2x screens */}
+      <Image
+        src={photo}
+        alt="Franco Guiragossian"
+        widths={[144, 288]}
+        sizes="144px"
+        loading="eager"
+        class="border-muted size-36 shrink-0 rounded-full border-4 object-cover"
+      />
+      <div class="text-center sm:text-start">
+        <h1 class="text-3xl font-semibold sm:text-4xl">Franco Guiragossian</h1>
+        <p class="text-muted-foreground mt-2 text-lg">
+          <UIText es={bio.tagline.es} en={bio.tagline.en} />
+        </p>
+      </div>
+    </div>
+
+    <h2 class="section-label">
+      <UIText es="Qué hago" en="What I do" />
+    </h2>
+    <div class="space-y-4 text-lg leading-relaxed">
+      {
+        bio.about.map(p => (
+          <p>
+            <UIText es={p.es} en={p.en} />
+          </p>
+        ))
+      }
+    </div>
+
+    {
+      bio.experience.length > 0 && (
+        <>
+          <h2 class="section-label">
+            <UIText es="Experiencia" en="Experience" />
+          </h2>
+          {/* Same #EEEEEE panel as every chart, in light and dark mode alike */}
+          <div class="bg-chart-bg rounded-lg px-4 pt-4 pb-1">
+            {/* Interactive timeline: a React island, loaded when it scrolls
+                into view. `today` (the build date) is where current roles end. */}
+            <ResponsiveExperienceTimeline
+              client:visible
+              rows={bio.experience}
+              {lang}
+              today={new Date().toISOString().slice(0, 10)}
+            />
+          </div>
+          {/* The same content as text, for screen readers (the chart is
+              hidden from them) */}
+          <ul class="sr-only">
+            {bio.experience.map(item => (
+              <li>
+                {item.organization}:{" "}
+                {item.roles.map(role => (
+                  <span>
+                    <UIText es={role.title.es} en={role.title.en} />
+                    {role.type && (
+                      <>
+                        {" "}
+                        (<UIText es={role.type.es} en={role.type.en} />)
+                      </>
+                    )}{" "}
+                    ({role.from} – {role.to ?? <UIText es="hoy" en="present" />}
+                    ).{" "}
+                  </span>
+                ))}
+                <UIText es={item.description.es} en={item.description.en} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+
+    <h2 class="section-label">
+      <UIText es="En este sitio" en="On this site" />
+    </h2>
+    {
+      /* Sentences with links inside can't go through UIText (plain
+        strings), so each language has its own paragraph */
+    }
+    {
+      lang === "es" ? (
+        <p class="text-lg leading-relaxed">
+          Mis proyectos están en el{" "}
+          <a href={pageUrl("es", "portfolio")} class={link}>
+            portfolio
+          </a>
+          . Escribo en{" "}
+          <a href={blogUrl("es")} class={link}>
+            {BLOGS.es.title}
+          </a>{" "}
+          y, en inglés, en{" "}
+          <a href={blogUrl("en")} lang="en" class={link}>
+            {BLOGS.en.title}
+          </a>
+          .
+        </p>
+      ) : (
+        <p class="text-lg leading-relaxed">
+          My projects are in the{" "}
+          <a href={pageUrl("en", "portfolio")} class={link}>
+            portfolio
+          </a>
+          . I write at{" "}
+          <a href={blogUrl("en")} class={link}>
+            {BLOGS.en.title}
+          </a>{" "}
+          and, in Spanish, at{" "}
+          <a href={blogUrl("es")} lang="es" class={link}>
+            {BLOGS.es.title}
+          </a>
+          .
+        </p>
+      )
+    }
+
+    <h2 class="section-label">
+      <UIText es="Contacto" en="Contact" />
+    </h2>
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-lg">
+      {
+        config.socials.map(({ name, url }) => (
+          <li>
+            <a href={url} target="_blank" rel="noopener" class={link}>
+              {socialLabels[name] ?? name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+  <Footer />
+</Layout>
